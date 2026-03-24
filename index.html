@@ -6,7 +6,9 @@
 <title>NextStep Data Bundles</title>
 
 <!-- Supabase -->
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js"></script>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
 <!-- Paystack -->
 <script src="https://js.paystack.co/v1/inline.js"></script>
 
@@ -165,47 +167,42 @@ async function buyData() {
  btn.innerHTML = '<span class="spinner"></span> Processing MoMo Prompt...';
     // ---------------------------
 
-  let handler = PaystackPop.setup({
-    key: 'pk_live_68410a36c97591a8e61aa8fc998b9e39cf51b92f', // Your Public Key
+ let handler = PaystackPop.setup({
+    key: 'pk_live_68410a36c97591a8e61aa8fc998b9e39cf51b92f', 
     email: phone + '@nextstepdata.com', 
     amount: bundle.price * 100,
     currency: "GHS",
-    // Paste the new line here:
     ref: 'DATA-' + phone + '-' + Date.now(), 
-    // ... the rest of your code
+    // Removed the extra }); that was here
+    callback: async function(response) {
+        btn.disabled = false;
+        btn.innerText = originalBtnText;
 
-
-        callback: async function(response) {
-            // Re-enable button on success
-            btn.disabled = false;
-            btn.innerText = originalBtnText;
-
-            const { error } = await supabaseClient.from('transactions').insert([
-                {
-                    phone: phone,
-                    bundle_id: bundle.id,
-                    amount: bundle.price,
-                    reference: response.reference,
-                    status: 'paid'
-                }
-            ]);
-
-            if (error) {
-                alert("Payment okay, but failed to save record: " + error.message);
-            } else {
-                alert("Payment successful! Please wait for your data.");
+        const { error } = await supabaseClient.from('transactions').insert([
+            {
+                phone: phone,
+                bundle_id: bundle.id,
+                amount: bundle.price,
+                reference: response.reference,
+                status: 'paid'
             }
-        },
-        onClose: () => {
-            // Re-enable button if they close the window
-            btn.disabled = false;
-            btn.innerText = originalBtnText;
-            alert('Payment cancelled.');
-        }
-    });
+        ]);
 
-    handler.openIframe();
-}
+        if (error) {
+            alert("Payment okay, but failed to save record: " + error.message);
+        } else {
+            alert("Payment successful! Please wait for your data.");
+        }
+    },
+    onClose: () => {
+        btn.disabled = false;
+        btn.innerText = originalBtnText;
+        alert('Payment cancelled.');
+    }
+}); // This is where the setup should actually close
+
+handler.openIframe();
+
 
  
 </script>
