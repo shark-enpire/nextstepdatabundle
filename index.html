@@ -150,7 +150,7 @@ function populateBundles(data) {
 
 // ------------------- Buy Data -------------------
 
-async function buyData() {
+   async function buyData() {
     const btn = document.querySelector('button[onclick="buyData()"]'); // Get the button
     const phone = document.getElementById('phone').value;
     const bundleId = document.getElementById('bundle').value;
@@ -167,43 +167,43 @@ async function buyData() {
  btn.innerHTML = '<span class="spinner"></span> Processing MoMo Prompt...';
     // ---------------------------
 
- let handler = PaystackPop.setup({
-    key: 'pk_live_68410a36c97591a8e61aa8fc998b9e39cf51b92f', 
-    email: phone + '@nextstepdata.com', 
-    amount: bundle.price * 100,
-    currency: "GHS",
-    ref: 'DATA-' + phone + '-' + Date.now(), 
-  
-    callback: function(response) {
-        btn.disabled = false;
-        btn.innerText = originalBtnText;
+    let handler = PaystackPop.setup({
+        key: 'pk_live_68410a36c97591a8e61aa8fc998b9e39cf51b92f', 
+        email: phone + '@nextstepdata.com', 
+        amount: bundle.price * 100,
+        currency: "GHS",
+        ref: 'DATA-' + phone + '-' + Date.now(),
+        callback: function(response) { 
+            btn.disabled = false;
+            btn.innerText = originalBtnText;
 
-        const { error } = await supabaseClient.from('transactions').insert([
-            {
-                phone: phone,
-                bundle_id: bundle.id,
-                amount: bundle.price,
-                reference: response.reference,
-                status: 'paid'
-            }
-        ]);
-
-        if (error) {
-            alert("Payment okay, but failed to save record: " + error.message);
-        } else {
-            alert("Payment successful! Please wait for your data.");
+            // This part handles the Supabase save without needing 'await'
+            supabaseClient.from('transactions').insert([
+                {
+                    phone: phone,
+                    bundle_id: bundle.id,
+                    amount: bundle.price,
+                    reference: response.reference,
+                    status: 'paid'
+                }
+            ]).then(({ error }) => {
+                if (error) {
+                    alert("Payment okay, but failed to save record: " + error.message);
+                } else {
+                    alert("Payment successful! Please wait for your data.");
+                }
+            });
+        },
+        onClose: () => {
+            btn.disabled = false;
+            btn.innerText = originalBtnText;
+            alert('Payment cancelled.');
         }
-    },
-    onClose: () => {
-        btn.disabled = false;
-        btn.innerText = originalBtnText;
-        alert('Payment cancelled.');
-    }
-}); // This is where the setup should actually close
+    });
 
-handler.openIframe();
+    handler.openIframe();
+} // This closes the buyData function
 
-}
  
 </script>
 
