@@ -173,7 +173,7 @@ async function buyData() {
     amount: bundle.price * 100,
     currency: "GHS",
     ref: 'DATA-' + phone + '-' + Date.now(), 
-    // Removed the extra }); that was here
+  
     callback: async function(response) {
         btn.disabled = false;
         btn.innerText = originalBtnText;
