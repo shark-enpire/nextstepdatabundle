@@ -174,7 +174,7 @@ async function buyData() {
     currency: "GHS",
     ref: 'DATA-' + phone + '-' + Date.now(), 
   
-    callback: async function(response) {
+    callback: function(response) {
         btn.disabled = false;
         btn.innerText = originalBtnText;
 
