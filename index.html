@@ -1,0 +1,214 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>NextStep Data Bundles</title>
+
+<!-- Supabase -->
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js"></script>
+<!-- Paystack -->
+<script src="https://js.paystack.co/v1/inline.js"></script>
+
+<style>
+body {
+    font-family: Arial, sans-serif;
+    background: #0f172a;
+    color: white;
+    text-align: center;
+}
+
+.container { padding: 20px; }
+
+input, select, button {
+    padding: 10px;
+    margin: 10px;
+    width: 80%;
+    border-radius: 8px;
+    border: none;
+}
+
+button {
+    background: #22c55e;
+    color: white;
+    font-weight: bold;
+    cursor: pointer;
+}
+
+button:hover {
+    background: #16a34a;
+}
+
+/* The spinning animation */
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+.spinner {
+  display: inline-block;
+  width: 12px;
+  height: 12px;
+  border: 2px solid #ffffff;
+  border-radius: 50%;
+  border-top-color: transparent;
+  animation: spin 1s linear infinite;
+  margin-right: 8px;
+}
+
+button:disabled {
+    background-color: #cccccc;
+    cursor: not-allowed;
+    opacity: 0.7;
+}
+
+
+</style>
+</head>
+<body>
+
+<div class="container">
+    <h2>Buy Data Bundles</h2>
+
+    <select id="network">
+        <option value="">All Networks</option>
+        <option>MTN</option>
+        <option>Vodafone</option>
+        <option>AirtelTigo</option>
+    </select>
+
+    <select id="bundle">
+        <!-- Bundles will populate here -->
+    </select>
+
+    <input type="text" id="phone" placeholder="Enter Phone Number">
+
+    <button onclick="buyData()">Buy Now</button>
+</div>
+
+<footer>
+
+<p>nextstep data bundles copyright 2026<sup>&#169</sup></p>
+
+</footer>
+
+
+<script>
+// ------------------- Supabase Setup -------------------
+const supabaseClient= supabase.createClient(
+    "https://zhinkuoqxsmotnbsjdue.supabase.co",
+    "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InpoaW5rdW9xeHNtb3RuYnNqZHVlIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzIzOTc1MzIsImV4cCI6MjA4Nzk3MzUzMn0.Kw5BDJDH9WOAiE3a-P6ylQiseErYG-mHCFi5fgamnUY"
+);
+
+// ------------------- Load Bundles -------------------
+let allBundles = [];
+
+document.addEventListener("DOMContentLoaded", () => {
+    loadBundles();
+
+    document.getElementById('network').addEventListener('change', () => {
+        const network = document.getElementById('network').value;
+        if (!network) populateBundles(allBundles);
+        else populateBundles(allBundles.filter(b => b.network === network));
+    });
+});
+
+// Fetch bundles from SupabaseClient
+async function loadBundles() {
+    const { data, error } = await supabaseClient.from('bundles').select('*');
+    console.log("Bundles data:", data, "Error:", error);
+
+    if (error) {
+        alert("Error loading bundles: " + error.message);
+        return;
+    }
+
+    allBundles = data;
+    populateBundles(data);
+}
+
+function populateBundles(data) {
+    const bundleSelect = document.getElementById('bundle');
+    
+    // 1. Clear the dropdown and add a default "Select" option
+    let html = '<option value="" disabled selected>Select a data bundle</option>';
+
+    // 2. Build the list in memory
+    data.forEach(item => {
+        html += `
+            <option value="${item.id}" data-price="${item.price}" data-name="${item.network} ${item.size}">
+                ${item.network} ${item.size} - GH₵${item.price}
+            </option>
+        `;
+    });
+
+    // 3. Update the DOM exactly once
+    bundleSelect.innerHTML = html;
+}
+
+// ------------------- Buy Data -------------------
+
+async function buyData() {
+    const btn = document.querySelector('button[onclick="buyData()"]'); // Get the button
+    const phone = document.getElementById('phone').value;
+    const bundleId = document.getElementById('bundle').value;
+
+    if (!phone) { alert("Please enter a phone number"); return; }
+    if (!bundleId) { alert("Please select a bundle"); return; }
+
+    const bundle = allBundles.find(b => b.id == Number(bundleId));
+    if (!bundle) { alert("Bundle selection error"); return; }
+
+    // --- START LOADING STATE ---
+    const originalBtnText = btn.innerText;
+    btn.disabled = true;
+ btn.innerHTML = '<span class="spinner"></span> Processing MoMo Prompt...';
+    // ---------------------------
+
+  let handler = PaystackPop.setup({
+    key: 'pk_live_68410a36c97591a8e61aa8fc998b9e39cf51b92f', // Your Public Key
+    email: phone + '@nextstepdata.com', 
+    amount: bundle.price * 100,
+    currency: "GHS",
+    // Paste the new line here:
+    ref: 'DATA-' + phone + '-' + Date.now(), 
+    // ... the rest of your code
+
+
+        callback: async function(response) {
+            // Re-enable button on success
+            btn.disabled = false;
+            btn.innerText = originalBtnText;
+
+            const { error } = await supabaseClient.from('transactions').insert([
+                {
+                    phone: phone,
+                    bundle_id: bundle.id,
+                    amount: bundle.price,
+                    reference: response.reference,
+                    status: 'paid'
+                }
+            ]);
+
+            if (error) {
+                alert("Payment okay, but failed to save record: " + error.message);
+            } else {
+                alert("Payment successful! Please wait for your data.");
+            }
+        },
+        onClose: () => {
+            // Re-enable button if they close the window
+            btn.disabled = false;
+            btn.innerText = originalBtnText;
+            alert('Payment cancelled.');
+        }
+    });
+
+    handler.openIframe();
+}
+
+ 
+</script>
+
+</body>
+</html>
