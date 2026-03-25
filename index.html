@@ -178,9 +178,9 @@ function populateBundles(data) {
         amount: bundle.price * 100,
         currency: "GHS",
         ref: 'DATA-' + phone + '-' + Date.now(),
-   callback: function(response) { 
+   callback: async function(response) { 
     btn.disabled = false;
-    btn.innerText = "Processing...";
+   btn.innerText = originalBtnText;
       
    if (!response.reference) {
     alert("Payment verification failed");
@@ -188,7 +188,7 @@ function populateBundles(data) {
    }
 
     // Just ping Make.com. Make will handle Supabase and the API.
-    fetch("YOUR_MAKE_WEBHOOK_URL", {
+    await fetch("https://hook.us2.make.com/pfjsqrsfwoavl4rymqn3vvi2johjh6v8", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -203,7 +203,7 @@ function populateBundles(data) {
     alert("Payment received! We are verifying your transaction now.");
 
           // You can also pass the reference in the URL if you want to show it on the next page
-            window.location.href = "success.html?ref=" + response.reference;
+         window.location.href = "success.html?ref=" + response.reference;
        
 
 },
@@ -221,7 +221,27 @@ function populateBundles(data) {
 // ... after you define the handler ...
 
 try {
-    handler.openIframe();
+ handler.openIframe({
+    // 1. Send the metadata so it shows up in Make.com
+    metadata: {
+        custom_fields: [
+            {
+                display_name: "Bundle ID",
+                variable_name: "bundle_id",
+                value: selectedBundle // This should be your variable for the bundle name
+            },
+            {
+                display_name: "Phone Number",
+                variable_name: "phone",
+                value: phoneInput.value // This should be your phone input variable
+            }
+        ]
+    },
+    // 2. Ensure the email and amount are also passed if not already in your setup
+    email: emailInput.value, 
+    amount: totalAmount * 100, // Paystack uses Pesewas/Kobo
+});
+
 } catch (err) {
     // If the iframe fails to open, reset the button
     btn.disabled = false;

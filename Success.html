@@ -1,33 +1,114 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Success - nextstepdatabundle</title>
-    <script src="https://cdn.tailwindcss.com"></script>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Payment Status</title>
+
+<style>
+body {
+    font-family: Arial;
+    background: #0f172a;
+    color: white;
+    text-align: center;
+    padding: 50px;
+}
+
+.card {
+    background: #1e293b;
+    padding: 30px;
+    border-radius: 12px;
+    display: inline-block;
+}
+
+.spinner {
+    border: 4px solid #ccc;
+    border-top: 4px solid #22c55e;
+    border-radius: 50%;
+    width: 40px;
+    height: 40px;
+    animation: spin 1s linear infinite;
+    margin: auto;
+}
+
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+</style>
 </head>
-<body class="bg-gray-100 flex items-center justify-center h-screen">
-    <div class="bg-white p-8 rounded-lg shadow-md text-center max-w-sm w-full">
-        <div class="text-green-500 text-6xl mb-4">✅</div>
-        <h1 class="text-2xl font-bold text-gray-800 mb-2">Order Received!</h1>
-        <p class="text-gray-600 mb-6">Your data bundle is being sent to your phone right now. This usually takes 1-5 minutes.</p>
-        
-        <div class="bg-gray-50 p-3 rounded mb-6 text-sm text-gray-500 font-mono">
-            Order Ref: <span id="ref-display">Loading...</span>
-        </div>
 
-        <a href="index.html" class="block w-full bg-blue-600 text-white font-bold py-3 rounded-lg hover:bg-blue-700 transition">
-            Buy More Data
-        </a>
-    </div>
+<body>
 
-    <script>
-        // This small script grabs the reference from the URL and shows it
-        const urlParams = new URLSearchParams(window.location.search);
-        const ref = urlParams.get('ref');
-        if (ref) {
-            document.getElementById('ref-display').innerText = ref;
-        }
-    </script>
+<div class="card">
+    <h2 id="status">⏳ Verifying payment...</h2>
+    <div class="spinner" id="loader"></div>
+    <p id="message">Please wait...</p>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js"></script>
+
+<script>
+// 🔹 Supabase setup
+const supabase = window.supabase.createClient(
+    "https://zhinkuoqxsmotnbsjdue.supabase.co",
+    "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InpoaW5rdW9xeHNtb3RuYnNqZHVlIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzIzOTc1MzIsImV4cCI6MjA4Nzk3MzUzMn0.Kw5BDJDH9WOAiE3a-P6ylQiseErYG-mHCFi5fgamnUY"
+);
+
+// 🔹 Get reference from URL
+const params = new URLSearchParams(window.location.search);
+const ref = params.get("ref");
+
+// 🔹 Check payment status
+async function checkPayment() {
+
+    if (!ref) {
+        showError("No reference found");
+        return;
+    }
+
+    // 🔥 Check your transactions table
+    const { data, error } = await supabase
+        .from("transactions")
+        .select("*")
+        .eq("paystack_ref", ref)
+        .single();
+
+    if (error || !data) {
+        // Still waiting (Make.com hasn't saved yet)
+        setTimeout(checkPayment, 3000);
+        return;
+    }
+
+    if (data.status === "paid") {
+        showSuccess(data);
+    } else {
+        showError("Payment not successful");
+    }
+}
+
+// ✅ Success UI
+function showSuccess(data) {
+    document.getElementById("status").innerText = "✅ Payment Successful!";
+    document.getElementById("loader").style.display = "none";
+    document.getElementById("message").innerHTML = `
+        Your bundle is being processed.<br><br>
+        📱 ${data.phone}<br>
+        📦 Bundle ID: ${data.bundle_id}
+    `;
+}
+
+// ❌ Error UI
+function showError(msg) {
+    document.getElementById("status").innerText = "❌ Failed";
+    document.getElementById("loader").style.display = "none";
+    document.getElementById("message").innerText = msg;
+}
+
+// Start checking
+checkPayment();
+
+</script>
+
 </body>
 </html>
