@@ -148,93 +148,61 @@ async function buyData() {
     const phone = document.getElementById('phone').value;
     const bundleId = document.getElementById('bundle').value;
 
-    if (!phone) { alert("Please enter a phone number"); return; }
-    if (!bundleId) { alert("Please select a bundle"); return; }
+    if (!phone || !bundleId) { alert("Please fill all fields"); return; }
 
     const bundle = allBundles.find(b => b.id == Number(bundleId));
-    if (!bundle) { alert("Bundle selection error"); return; }
+    if (!bundle) return;
 
-    // --- LOADING STATE ---
+    // Loading State
     const originalBtnText = btn.innerText;
     btn.disabled = true;
-    btn.innerHTML = '<span class="spinner"></span> Processing...';
+    btn.innerHTML = 'Processing...';
 
     // PAYSTACK SETUP
+
     let handler = PaystackPop.setup({
         key: 'pk_live_68410a36c97591a8e61aa8fc998b9e39cf51b92f', 
         email: phone + '@nextstepdata.com', 
-        amount: bundle.price * 100, // Converts GH₵ to Pesewas
+        amount: bundle.price * 100, 
         currency: "GHS",
         ref: 'DATA-' + phone + '-' + Date.now(),
-        
-        // Metadata ensures Bundle ID shows up in Make.com
         metadata: {
             custom_fields: [
-                {
-                    display_name: "Bundle ID",
-                    variable_name: "bundle_id",
-                    value: bundle.id 
-                },
-                {
-                    display_name: "Phone Number",
-                    variable_name: "phone",
-                    value: phone 
-                }
+                { display_name: "Bundle ID", variable_name: "bundle_id", value: bundle.id }
             ]
         },
+        // THIS IS THE CALLBACK PAYSTACK IS LOOKING FOR
+     callback: async function(response) { 
+    btn.disabled = false;
+    btn.innerText = originalBtnText;
 
-        callback: async function(response) { 
-            btn.disabled = false;
-            btn.innerText = originalBtnText;
-            
-            if (!response.reference) {
-                alert("Payment verification failed");
-                return;
-            }
-
-            try {
-                // Send data to Make.com Webhook
-                await fetch("https://hook.us2.make.com/pfjsqrsfwoavl4rymqn3vvi2johjh6v8", {
-                    method: "POST",
-                    headers: { "Content-Type": "application/json" },
-                    body: JSON.stringify({
-                        reference: response.reference,
-                        phone: phone,
-                        bundle_id: bundle.id,
-                        bundle_size: bundle.size,
-                        network: bundle.network
-                    })
-                });
-
-                alert("Payment received! We are verifying your transaction now.");
-                // Matches your file name "Success.html" (Capital S)
-                window.location.href = "success.html?ref=" + response.reference;
-            } catch (err) {
-                console.error("Webhook Error:", err);
-                alert("Payment successful, but system update failed. Please contact us.");
-            }
-        },
+    try {
+        await fetch("https://hook.us2.make.com/pfjsqrsfwoavl4rymqn3vvi2johjh6v8", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+                reference: response.reference,
+                phone: phone,
+                bundle_id: bundle.id
+            })
+        });
+        // Only redirect if the webhook ping was successful
+        window.location.href = "success.html?ref=" + response.reference;
+    } catch (err) {
+        console.error("Make.com Error:", err);
+        alert("Payment successful, but we had trouble updating the system. Please screenshot your receipt!");
+    }
+},
 
         onClose: () => {
             btn.disabled = false;
-            btn.innerText = "Try Again"; 
-            alert('Transaction cancelled ❌');
+            btn.innerText = "Try Again";
         }
     });
 
-    // OPEN THE IFRAME
-    try {
-        handler.openIframe(); 
-    } catch (err) {
-        btn.disabled = false;
-        btn.innerText = originalBtnText;
-        console.error("Paystack Error:", err);
-        alert("Could not open payment window.");
-    }
+    handler.openIframe();
 }
 </script>
-
-
 
  </div>
 
