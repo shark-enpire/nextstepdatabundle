@@ -160,48 +160,47 @@ async function buyData() {
 
     // PAYSTACK SETUP
 
-    let handler = PaystackPop.setup({
-        key: 'pk_live_68410a36c97591a8e61aa8fc998b9e39cf51b92f', 
-        email: phone + '@nextstepdata.com', 
-        amount: bundle.price * 100, 
-        currency: "GHS",
-        ref: 'DATA-' + phone + '-' + Date.now(),
-        metadata: {
-            custom_fields: [
-                { display_name: "Bundle ID", variable_name: "bundle_id", value: bundle.id }
-            ]
-        },
-        // THIS IS THE CALLBACK PAYSTACK IS LOOKING FOR
-     callback: async function(response) { 
-    btn.disabled = false;
-    btn.innerText = originalBtnText;
+let handler = PaystackPop.setup({
+    // Use pk_test for testing, pk_live for production
+    key: 'pk_live_68410a36c97591a8e61aa8fc998b9e39cf51b92f', 
+    email: phone + '@nextstepdata.com', 
+    amount: bundle.price * 100, // Correct: Paystack expects subunits (GHS 1.00 = 100)
+    currency: "GHS",
+    reference: 'DATA-' + phone + '-' + Date.now(), // Fixed: Changed 'ref' to 'reference'
+    metadata: {
+        custom_fields: [
+            { display_name: "Bundle ID", variable_name: "bundle_id", value: bundle.id }
+        ]
+    },
+    callback: async function(response) { 
+        btn.disabled = false;
+        btn.innerText = originalBtnText;
 
-    try {
-        await fetch("https://hook.us2.make.com/pfjsqrsfwoavl4rymqn3vvi2johjh6v8", {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({
-                reference: response.reference,
-                phone: phone,
-                bundle_id: bundle.id
-            })
-        });
-        // Only redirect if the webhook ping was successful
-        window.location.href = "success.html?ref=" + response.reference;
-    } catch (err) {
-        console.error("Make.com Error:", err);
-        alert("Payment successful, but we had trouble updating the system. Please screenshot your receipt!");
-    }
-},
-
-        onClose: () => {
-            btn.disabled = false;
-            btn.innerText = "Try Again";
+        try {
+            // It is best practice to verify this reference on your server
+            await fetch("https://make.com", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({
+                    reference: response.reference,
+                    phone: phone,
+                    bundle_id: bundle.id
+                })
+            });
+            window.location.href = "success.html?ref=" + response.reference;
+        } catch (err) {
+            console.error("Make.com Error:", err);
+            alert("Payment successful, but system update failed. Please save your reference: " + response.reference);
         }
-    });
+    },
+    onClose: () => {
+        btn.disabled = false;
+        btn.innerText = "Try Again";
+    }
+});
 
-    handler.openIframe();
-}
+handler.openIframe();
+ }
 </script>
 
  </div>
