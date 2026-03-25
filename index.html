@@ -96,13 +96,12 @@ button:disabled {
 <footer>
 
 <p>nextstep data bundles copyright 2026<sup>&#169</sup></p>
-
 </footer>
 
 
 <script>
 // ------------------- Supabase Setup -------------------
-const supabaseClient= supabase.createClient(
+const supabaseClient = supabase.createClient(
     "https://zhinkuoqxsmotnbsjdue.supabase.co",
     "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InpoaW5rdW9xeHNtb3RuYnNqZHVlIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzIzOTc1MzIsImV4cCI6MjA4Nzk3MzUzMn0.Kw5BDJDH9WOAiE3a-P6ylQiseErYG-mHCFi5fgamnUY"
 );
@@ -120,27 +119,19 @@ document.addEventListener("DOMContentLoaded", () => {
     });
 });
 
-// Fetch bundles from SupabaseClient
 async function loadBundles() {
     const { data, error } = await supabaseClient.from('bundles').select('*');
-    console.log("Bundles data:", data, "Error:", error);
-
     if (error) {
         alert("Error loading bundles: " + error.message);
         return;
     }
-
     allBundles = data;
     populateBundles(data);
 }
 
 function populateBundles(data) {
     const bundleSelect = document.getElementById('bundle');
-    
-    // 1. Clear the dropdown and add a default "Select" option
     let html = '<option value="" disabled selected>Select a data bundle</option>';
-
-    // 2. Build the list in memory
     data.forEach(item => {
         html += `
             <option value="${item.id}" data-price="${item.price}" data-name="${item.network} ${item.size}">
@@ -148,15 +139,13 @@ function populateBundles(data) {
             </option>
         `;
     });
-
-    // 3. Update the DOM exactly once
     bundleSelect.innerHTML = html;
 }
 
 // ------------------- Buy Data -------------------
 
-   async function buyData() {
-    const btn = document.querySelector('button[onclick="buyData()"]'); // Get the button
+async function buyData() {
+    const btn = document.querySelector('button[onclick="buyData()"]'); 
     const phone = document.getElementById('phone').value;
     const bundleId = document.getElementById('bundle').value;
 
@@ -166,81 +155,79 @@ function populateBundles(data) {
     const bundle = allBundles.find(b => b.id == Number(bundleId));
     if (!bundle) { alert("Bundle selection error"); return; }
 
-    // --- START LOADING STATE ---
+    // --- LOADING STATE ---
     const originalBtnText = btn.innerText;
     btn.disabled = true;
- btn.innerHTML = '<span class="spinner"></span> Processing MoMo Prompt...';
-    // ---------------------------
+    btn.innerHTML = '<span class="spinner"></span> Processing...';
 
-  let handler = PaystackPop.setup({
-    key: 'pk_live_68410a36c97591a8e61aa8fc998b9e39cf51b92f', 
-    email: phone + '@nextstepdata.com', 
-    amount: bundle.price * 100,
-    currency: "GHS",
-    ref: 'DATA-' + phone + '-' + Date.now(),
-    
-    // ADD THE METADATA HERE inside setup
-    metadata: {
-        custom_fields: [
-            {
-                display_name: "Bundle ID",
-                variable_name: "bundle_id",
-                value: bundle.id // Using your 'bundle.id' variable from the code above
-            },
-            {
-                display_name: "Phone Number",
-                variable_name: "phone",
-                value: phone // Using your 'phone' variable from the code above
+    let handler = PaystackPop.setup({
+        key: 'pk_live_68410a36c97591a8e61aa8fc998b9e39cf51b92f', 
+        email: phone + '@nextstepdata.com', 
+        amount: bundle.price * 100, // Converts GH₵ to Pesewas
+        currency: "GHS",
+        ref: 'DATA-' + phone + '-' + Date.now(),
+        
+        // This makes the Bundle ID visible in Make.com metadata
+        metadata: {
+            custom_fields: [
+                {
+                    display_name: "Bundle ID",
+                    variable_name: "bundle_id",
+                    value: bundle.id 
+                },
+                {
+                    display_name: "Phone Number",
+                    variable_name: "phone",
+                    value: phone 
+                }
+            ]
+        },
+
+        callback: async function(response) { 
+            btn.disabled = false;
+            btn.innerText = originalBtnText;
+            
+            if (!response.reference) {
+                alert("Payment verification failed");
+                return;
             }
-        ]
-    },
 
-    callback: async function(response) { 
+            // Sends data to Make.com Webhook
+            await fetch("https://hook.us2.make.com/pfjsqrsfwoavl4rymqn3vvi2johjh6v8", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({
+                    reference: response.reference,
+                    phone: phone,
+                    bundle_id: bundle.id,
+                    bundle_size: bundle.size,
+                    network: bundle.network
+                })
+            });
+
+            alert("Payment received! We are verifying your transaction now.");
+            // MATCHES YOUR FILE NAME: "success.html" (Capital S)
+            window.location.href = "Success.html?ref=" + response.reference;
+        },
+
+        onClose: () => {
+            btn.disabled = false;
+            btn.innerText = "Try Again"; 
+            alert('Transaction cancelled ❌');
+        }
+    });
+
+    try {
+        handler.openIframe(); 
+    } catch (err) {
         btn.disabled = false;
         btn.innerText = originalBtnText;
-        
-        if (!response.reference) {
-            alert("Payment verification failed");
-            return;
-        }
-
-        // Ping Make.com
-        await fetch("https://hook.us2.make.com/pfjsqrsfwoavl4rymqn3vvi2johjh6v8", {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({
-                reference: response.reference,
-                phone: phone,
-                bundle_id: bundle.id,
-                bundle_size: bundle.size,
-                network: bundle.network
-            })
-        });
-
-        alert("Payment received! We are verifying your transaction now.");
-        window.location.href = "success.html?ref=" + response.reference;
-    },
-
-    onClose: () => {
-        btn.disabled = false;
-        btn.innerText = "Try Again"; 
-        alert('Transaction cancelled ❌ You can try again anytime.');
+        console.error("Paystack Error:", err);
+        alert("Could not open payment window.");
     }
-});
-
-// NOW CALL IT EMPTY
-try {
-    handler.openIframe(); 
-} catch (err) {
-    btn.disabled = false;
-    btn.innerText = originalBtnText;
-    console.error("Paystack Error:", err);
-    alert("Could not open payment window.");
-    }
-} // This closes the buyData function
-
- 
+}
 </script>
+
 
  </div>
 
