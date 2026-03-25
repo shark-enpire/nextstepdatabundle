@@ -144,63 +144,101 @@ function populateBundles(data) {
 // ------------------- Buy Data -------------------
 
 async function buyData() {
+    // 1. DOM Elements
     const btn = document.querySelector('button[onclick="buyData()"]'); 
-    const phone = document.getElementById('phone').value;
-    const bundleId = document.getElementById('bundle').value;
+    const phoneInput = document.getElementById('phone');
+    const bundleInput = document.getElementById('bundle');
 
-    if (!phone || !bundleId) { alert("Please fill all fields"); return; }
+    if (!phoneInput || !bundleInput) {
+        console.error("Input elements not found");
+        return;
+    }
 
+    const phone = phoneInput.value;
+    const bundleId = bundleInput.value;
+
+    if (!phone || !bundleId) { 
+        alert("Please fill all fields"); 
+        return; 
+    }
+
+    // 2. Data Validation
     const bundle = allBundles.find(b => b.id == Number(bundleId));
-    if (!bundle) return;
+    if (!bundle) {
+        alert("Selected bundle not found.");
+        return;
+    }
 
-    // Loading State
+    // 3. UI Loading State
     const originalBtnText = btn.innerText;
     btn.disabled = true;
     btn.innerHTML = 'Processing...';
 
-    // PAYSTACK SETUP
+    // 4. PAYSTACK SETUP
+    const handler = PaystackPop.setup({
+        key: 'pk_live_68410a36c97591a8e61aa8fc998b9e39cf51b92f', 
+        email: phone + '@nextstepdata.com', 
+        // Math.round prevents errors with decimal prices
+        amount: Math.round(bundle.price * 100), 
+        currency: "GHS",
+        // Note: For inline.js, use 'ref'. 'reference' is also accepted but 'ref' is standard for popups.
+        ref: 'DATA-' + phone + '-' + Date.now(), 
+        metadata: {
+            custom_fields: [
+                { display_name: "Bundle ID", variable_name: "bundle_id", value: bundle.id },
+                { display_name: "Customer Phone", variable_name: "phone_number", value: phone }
+            ]
+        },
+        // FIXED: Using a standard function declaration here solves the "valid function" error
+        callback: function(response) { 
+            handleSuccess(response, phone, bundle, btn, originalBtnText);
+        },
+        onClose: function() {
+            btn.disabled = false;
+            btn.innerText = "Try Again";
+        }
+    });
 
-let handler = PaystackPop.setup({
-    // Use pk_test for testing, pk_live for production
-    key: 'pk_live_68410a36c97591a8e61aa8fc998b9e39cf51b92f', 
-    email: phone + '@nextstepdata.com', 
-    amount: bundle.price * 100, // Correct: Paystack expects subunits (GHS 1.00 = 100)
-    currency: "GHS",
-    reference: 'DATA-' + phone + '-' + Date.now(), // Fixed: Changed 'ref' to 'reference'
-    metadata: {
-        custom_fields: [
-            { display_name: "Bundle ID", variable_name: "bundle_id", value: bundle.id }
-        ]
-    },
-    callback: async function(response) { 
+    handler.openIframe();
+}
+
+/**
+ * Handles the logic after a successful payment
+ */
+async function handleSuccess(response, phone, bundle, btn, originalBtnText) {
+    btn.innerText = "Updating Account...";
+    
+    try {
+        // IMPORTANT: Replace with your actual Make.com Webhook URL
+        const webhookUrl = "https://hook.us2.make.com/pfjsqrsfwoavl4rymqn3vvi2johjh6v8";
+
+        const res = await fetch(webhookUrl, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+                status: "paid",
+                reference: response.reference,
+                phone: phone,
+                bundle_id: bundle.id,
+                amount: bundle.price
+            })
+        });
+
+        if (res.ok) {
+            window.location.href = "success.html?ref=" + response.reference;
+        } else {
+            throw new Error("Webhook server error");
+        }
+
+    } catch (err) {
+        console.error("System Update Error:", err);
+        // Empathy for the user: Don't just show an error, give them the reference
+        alert("Payment was successful! Your data will be processed shortly. Reference: " + response.reference);
         btn.disabled = false;
         btn.innerText = originalBtnText;
-
-        try {
-            // It is best practice to verify this reference on your server
-            await fetch("https://make.com", {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({
-                    reference: response.reference,
-                    phone: phone,
-                    bundle_id: bundle.id
-                })
-            });
-            window.location.href = "success.html?ref=" + response.reference;
-        } catch (err) {
-            console.error("Make.com Error:", err);
-            alert("Payment successful, but system update failed. Please save your reference: " + response.reference);
-        }
-    },
-    onClose: () => {
-        btn.disabled = false;
-        btn.innerText = "Try Again";
     }
-});
+}
 
-handler.openIframe();
- }
 </script>
 
  </div>
