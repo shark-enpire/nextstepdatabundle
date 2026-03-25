@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Success - nextstepdatabundle</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gray-100 flex items-center justify-center h-screen">
+    <div class="bg-white p-8 rounded-lg shadow-md text-center max-w-sm w-full">
+        <div class="text-green-500 text-6xl mb-4">✅</div>
+        <h1 class="text-2xl font-bold text-gray-800 mb-2">Order Received!</h1>
+        <p class="text-gray-600 mb-6">Your data bundle is being sent to your phone right now. This usually takes 1-5 minutes.</p>
+        
+        <div class="bg-gray-50 p-3 rounded mb-6 text-sm text-gray-500 font-mono">
+            Order Ref: <span id="ref-display">Loading...</span>
+        </div>
+
+        <a href="index.html" class="block w-full bg-blue-600 text-white font-bold py-3 rounded-lg hover:bg-blue-700 transition">
+            Buy More Data
+        </a>
+    </div>
+
+    <script>
+        // This small script grabs the reference from the URL and shows it
+        const urlParams = new URLSearchParams(window.location.search);
+        const ref = urlParams.get('ref');
+        if (ref) {
+            document.getElementById('ref-display').innerText = ref;
+        }
+    </script>
+</body>
+</html>

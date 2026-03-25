@@ -12,6 +12,9 @@
 <!-- Paystack -->
 <script src="https://js.paystack.co/v1/inline.js"></script>
 
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+
 <style>
 body {
     font-family: Arial, sans-serif;
@@ -68,6 +71,8 @@ button:disabled {
 </style>
 </head>
 <body>
+
+<div class="max-w-md mx-auto px-4">
 
 <div class="container">
     <h2>Buy Data Bundles</h2>
@@ -173,39 +178,65 @@ function populateBundles(data) {
         amount: bundle.price * 100,
         currency: "GHS",
         ref: 'DATA-' + phone + '-' + Date.now(),
-        callback: function(response) { 
-            btn.disabled = false;
-            btn.innerText = originalBtnText;
+   callback: function(response) { 
+    btn.disabled = false;
+    btn.innerText = "Processing...";
+      
+   if (!response.reference) {
+    alert("Payment verification failed");
+    return;
+   }
 
-            // This part handles the Supabase save without needing 'await'
-            supabaseClient.from('transactions').insert([
-                {
-                    phone: phone,
-                    bundle_id: bundle.id,
-                    amount: bundle.price,
-                    reference: response.reference,
-                    status: 'paid'
-                }
-            ]).then(({ error }) => {
-                if (error) {
-                    alert("Payment okay, but failed to save record: " + error.message);
-                } else {
-                    alert("Payment successful! Please wait for your data.");
-                }
-            });
-        },
-        onClose: () => {
-            btn.disabled = false;
-            btn.innerText = originalBtnText;
-            alert('Payment cancelled.');
+    // Just ping Make.com. Make will handle Supabase and the API.
+    fetch("YOUR_MAKE_WEBHOOK_URL", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+            reference: response.reference,
+            phone: phone,
+            bundle_id: bundle.id,
+            bundle_size: bundle.size,
+            network: bundle.network
+        })
+    });
+
+    alert("Payment received! We are verifying your transaction now.");
+
+          // You can also pass the reference in the URL if you want to show it on the next page
+            window.location.href = "success.html?ref=" + response.reference;
+       
+
+},
+
+     onClose: () => {
+    // 1. Re-enable the button so they can click it
+    btn.disabled = false;
+    
+    // 2. Change the text to something encouraging
+    btn.innerText = "Try Again"; 
+            alert('Transaction cancelled ❌ You can try again anytime.');
         }
     });
 
+// ... after you define the handler ...
+
+try {
     handler.openIframe();
-} // This closes the buyData function
+} catch (err) {
+    // If the iframe fails to open, reset the button
+    btn.disabled = false;
+    btn.innerText = originalBtnText;
+    console.error("Paystack Error:", err);
+    alert("Could not open payment window. Please check your internet and try again.");
+         }
+
+
+  } // This closes the buyData function
 
  
 </script>
+
+ </div>
 
 </body>
 </html>
