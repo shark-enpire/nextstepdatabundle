@@ -98,7 +98,6 @@ button:disabled {
 <p>nextstep data bundles copyright 2026<sup>&#169</sup></p>
 </footer>
 
-
 <script>
 // ------------------- Supabase Setup -------------------
 const supabaseClient = supabase.createClient(
@@ -160,6 +159,7 @@ async function buyData() {
     btn.disabled = true;
     btn.innerHTML = '<span class="spinner"></span> Processing...';
 
+    // PAYSTACK SETUP
     let handler = PaystackPop.setup({
         key: 'pk_live_68410a36c97591a8e61aa8fc998b9e39cf51b92f', 
         email: phone + '@nextstepdata.com', 
@@ -167,7 +167,7 @@ async function buyData() {
         currency: "GHS",
         ref: 'DATA-' + phone + '-' + Date.now(),
         
-        // This makes the Bundle ID visible in Make.com metadata
+        // Metadata ensures Bundle ID shows up in Make.com
         metadata: {
             custom_fields: [
                 {
@@ -192,22 +192,27 @@ async function buyData() {
                 return;
             }
 
-            // Sends data to Make.com Webhook
-            await fetch("https://hook.us2.make.com/pfjsqrsfwoavl4rymqn3vvi2johjh6v8", {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({
-                    reference: response.reference,
-                    phone: phone,
-                    bundle_id: bundle.id,
-                    bundle_size: bundle.size,
-                    network: bundle.network
-                })
-            });
+            try {
+                // Send data to Make.com Webhook
+                await fetch("https://hook.us2.make.com/pfjsqrsfwoavl4rymqn3vvi2johjh6v8", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({
+                        reference: response.reference,
+                        phone: phone,
+                        bundle_id: bundle.id,
+                        bundle_size: bundle.size,
+                        network: bundle.network
+                    })
+                });
 
-            alert("Payment received! We are verifying your transaction now.");
-            // MATCHES YOUR FILE NAME: "success.html" (Capital S)
-            window.location.href = "Success.html?ref=" + response.reference;
+                alert("Payment received! We are verifying your transaction now.");
+                // Matches your file name "Success.html" (Capital S)
+                window.location.href = "success.html?ref=" + response.reference;
+            } catch (err) {
+                console.error("Webhook Error:", err);
+                alert("Payment successful, but system update failed. Please contact us.");
+            }
         },
 
         onClose: () => {
@@ -217,6 +222,7 @@ async function buyData() {
         }
     });
 
+    // OPEN THE IFRAME
     try {
         handler.openIframe(); 
     } catch (err) {
@@ -227,6 +233,7 @@ async function buyData() {
     }
 }
 </script>
+
 
 
  </div>
