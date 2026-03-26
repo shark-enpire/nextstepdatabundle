@@ -5,6 +5,8 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Payment Status</title>
 
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
 <style>
 body {
     font-family: Arial;
@@ -43,13 +45,13 @@ body {
 <div class="card">
     <h2 id="status">⏳ Verifying payment...</h2>
     <div class="spinner" id="loader"></div>
-    <p id="message">Please wait...</p>
+    <p id="message"> We are confirming your payment securely... </p>
 </div>
  
 
 <script>
 // 1. Supabase setup
-const supabase = window.supabase.createClient(
+const supabaseClient = window.supabase.createClient(
     "https://zhinkuoqxsmotnbsjdue.supabase.co",
     "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InpoaW5rdW9xeHNtb3RuYnNqZHVlIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzIzOTc1MzIsImV4cCI6MjA4Nzk3MzUzMn0.Kw5BDJDH9WOAiE3a-P6ylQiseErYG-mHCFi5fgamnUY"
 );
@@ -60,52 +62,74 @@ const ref = params.get("ref");
 
 // 3. Logic Variables
 let attempts = 0;
-const maxAttempts = 20; // Stop after 1 minute (20 tries * 3 seconds)
+const maxAttempts = 20; 
 
-// 4. The main function (PASTE REPLACEMENT HERE)
+// 4. The main function (Updated with Error Handling)
 async function checkPayment() {
-    attempts++;
-    
     if (!ref) {
-        showError("No reference found in URL");
-        return;
+        showError("No payment reference found in the URL.");
+        return; 
     }
+
+    attempts++;
 
     if (attempts > maxAttempts) {
         showError("Verification timed out. Please refresh or contact support.");
         return;
     }
 
-    const { data, error } = await supabase
-        .from("transactions")
-        .select("status, phone, bundle_id") 
-        .eq("paystack_ref", ref)
-        .maybeSingle(); 
+    try {
+        // Query the database
+        const { data, error } = await supabaseClient
+            .from("transactions")
+            .select("status, phone, bundle_id") 
+            .eq("paystack_ref", ref)
+            .maybeSingle();
 
-    // If data is null, it means Make.com hasn't created the row yet
-    if (!data) {
-        console.log("Still waiting for database record... Attempt: " + attempts);
-        setTimeout(checkPayment, 3000);
-        return;
-    }
+        if (error) throw error;
 
-    // Check the status value
-    if (data.status.toLowerCase() === "paid") {
-        showSuccess(data);
-    } else {
-        showError("Payment not successful. Status: " + data.status);
+        // If data is null, the row hasn't been created by Make.com yet
+        if (!data) {
+            console.log(`Attempt ${attempts}/${maxAttempts}: Waiting for record...`);
+            setTimeout(checkPayment, 3000);
+            return;
+        }
+
+        // Final status verification
+        const currentStatus = data.status?.toLowerCase();
+
+        if (currentStatus === "paid") {
+            showSuccess(data);
+        } else if (currentStatus === "failed") {
+            showError("Payment failed. Please check your bank or try again.");
+        } else {
+            // If status is 'pending' or anything else, keep polling
+            console.log(`Status is ${currentStatus}. Retrying...`);
+            setTimeout(checkPayment, 3000);
+        }
+
+    } catch (err) {
+        console.error("Connection Error:", err.message);
+        showError("Connection issue. Still trying to verify...");
+        setTimeout(checkPayment, 5000); // Wait slightly longer if there's a network glitch
     }
 }
 
 // 5. UI Helper Functions
+
 function showSuccess(data) {
     document.getElementById("status").innerText = "✅ Payment Successful!";
     document.getElementById("loader").style.display = "none";
     document.getElementById("message").innerHTML = `
         Your bundle is being processed.<br><br>
         📱 ${data.phone}<br>
-        📦 Bundle ID: ${data.bundle_id}
+        📦 Bundle ID: ${data.bundle_id}<br><br>
+        <button onclick="window.location.href='index.html'" style="padding:10px 20px; background:#22c55e; color:white; border:none; border-radius:5px; cursor:pointer;">
+            Buy Another Bundle
+        </button>
     `;
+    
+    // Remove the automatic setTimeout redirect or make it longer (e.g., 10 seconds)
 }
 
 function showError(msg) {

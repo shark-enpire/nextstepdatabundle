@@ -16,35 +16,167 @@
 
 
 <style>
+
+/* 1. Global & Reset Styles */
 body {
     font-family: Arial, sans-serif;
     background: #0f172a;
     color: white;
     text-align: center;
+    margin: 0;
+    padding: 0;
 }
 
-.container { padding: 20px; }
+/* 2. Navbar & Top Menu (The Left-Aligned Part) */
+.navbar {
+    display: flex;
+    flex-direction: row; /* Keeps items side-by-side */
+    align-items: center; /* Centers items vertically */
+    gap: 12px;           /* Gap between button and text */
+    padding: 15px;
+    background: #0f172a;
+    border-bottom: 1px solid #1e293b;
+}
 
-input, select, button {
-    padding: 10px;
-    margin: 10px;
-    width: 80%;
+.dropdown {
+    position: relative;
+    display: inline-block;
+}
+
+/* Menu Button - Now "Sizable" and naturally sized */
+.dropbtn {
+    background-color: #1e293b;
+    color: white;
+    padding: 8px 15px;
+    font-size: 14px; 
+    border: 1px solid #334155;
+    border-radius: 8px;
+    cursor: pointer;
+    width: auto;         /* Prevents it from being 80% wide */
+    white-space: nowrap;
+}
+
+.p-style {
+    color: #94a3b8;
+    font-weight: bold;
+    font-size: 11px;
+    margin: 0;           /* Removes the "huge space" */
+    text-align: left;
+}
+
+/* 3. Dropdown Menu Content */
+.dropdown-content {
+    display: none; 
+    position: absolute;
+    left: 0;
+    background-color: #1e293b;
+    min-width: 220px;
+    box-shadow: 0px 8px 16px 0px rgba(0,0,0,0.5);
+    z-index: 100;
+    border-radius: 8px;
+    overflow: hidden;
+    text-align: left;
+    border: 1px solid #334155;
+}
+
+.dropdown-content a {
+    color: white;
+    padding: 15px 16px;
+    text-decoration: none;
+    display: block;
+    font-size: 14px;
+    border-bottom: 1px solid #334155;
+}
+
+.dropdown-content a:hover {
+    background-color: #334155;
+}
+
+/* 4. Form Container & Main Inputs */
+.container { 
+    padding: 20px; 
+}
+
+/* Specifically target inputs and buttons INSIDE the container to keep them big */
+.container input, 
+.container select, 
+.container button {
+    padding: 12px;
+    margin: 10px auto;
+    width: 90%;
+    max-width: 400px;
+    display: block; /* Stack them vertically */
     border-radius: 8px;
     border: none;
+    box-sizing: border-box;
 }
 
-button {
+.container button {
     background: #22c55e;
     color: white;
     font-weight: bold;
     cursor: pointer;
+    font-size: 16px;
 }
 
-button:hover {
+.container button:hover {
     background: #16a34a;
 }
 
-/* The spinning animation */
+.container button:disabled {
+    background-color: #cccccc;
+    cursor: not-allowed;
+    opacity: 0.7;
+}
+
+/* 5. Modals (Terms & Conditions) */
+.modal {
+    display: none; 
+    position: fixed; 
+    z-index: 200; 
+    left: 0;
+    top: 0;
+    width: 100%; 
+    height: 100%; 
+    background-color: rgba(0,0,0,0.85); 
+}
+
+.modal-content {
+    background-color: #ffffff;
+    margin: 15% auto; 
+    padding: 20px;
+    border-radius: 12px;
+    width: 85%;
+    max-width: 400px;
+    color: #1e293b;
+    text-align: left;
+}
+
+.terms-text {
+    max-height: 250px;
+    overflow-y: auto;
+    font-size: 14px;
+    margin-bottom: 15px;
+}
+
+.close {
+    color: #64748b;
+    float: right;
+    font-size: 24px;
+    font-weight: bold;
+    cursor: pointer;
+}
+
+.understand-btn {
+    background: #22c55e !important; /* Forces color */
+    color: white !important;
+    width: 100% !important;
+    padding: 12px;
+    border-radius: 8px;
+    font-weight: bold;
+}
+
+/* 6. Animations & Utilities */
 @keyframes spin {
   0% { transform: rotate(0deg); }
   100% { transform: rotate(360deg); }
@@ -61,16 +193,45 @@ button:hover {
   margin-right: 8px;
 }
 
-button:disabled {
-    background-color: #cccccc;
-    cursor: not-allowed;
-    opacity: 0.7;
-}
+.show { display: block !important; }
 
+footer {
+    margin-top: 30px;
+    padding-bottom: 20px;
+    font-size: 12px;
+    color: #64748b;
+}
 
 </style>
 </head>
 <body>
+
+<nav class="navbar">
+    <div class="dropdown">
+        <button id="menuBtn" class="dropbtn">Help & Policies ☰</button>
+        <div id="myDropdown" class="dropdown-content">
+            <a href="https://wa.me/233540753328" target="_blank">💬 Contact Support</a>
+            <a href="javascript:void(0)" id="termsLink">📄 Terms & Conditions</a>
+        </div>
+    </div>
+    <p class="p-style">NextStep Data Bundles Official Domain | Get Affordable Offers Here</p>
+</nav>
+
+<div class="container"></div>
+
+<div id="termsModal" class="modal">
+  <div class="modal-content">
+    <span class="close" id="closeModalBtn">&times;</span>
+    <h2 style="margin-top:0;">Terms & Conditions</h2>
+    <div class="terms-text">
+        <p><strong>1. Accuracy:</strong> Please double-check your number. We cannot refund data sent to the wrong number.</p>
+        <p><strong>2. Delivery:</strong> Most bundles arrive instantly. If yours takes longer than 30 minutes, contact support via WhatsApp.</p>
+        <p><strong>3. Payments:</strong> All payments are processed securely via Paystack.</p>
+        <p><strong>4. Refunds:</strong> Sales are final once the data is successfully credited to the network.</p>
+    </div>
+    <button class="understand-btn" id="confirmTermsBtn">I Understand</button>
+  </div>
+</div>
 
 <div class="max-w-md mx-auto px-4">
 
@@ -237,6 +398,42 @@ async function handleSuccess(response, phone, bundle, btn, originalBtnText) {
         alert("Payment was successful! Your data will be processed shortly. Reference: " + response.reference);
         btn.disabled = false;
         btn.innerText = originalBtnText;
+    }
+}
+
+const menuBtn = document.getElementById("menuBtn");
+const myDropdown = document.getElementById("myDropdown");
+const termsLink = document.getElementById("termsLink");
+const termsModal = document.getElementById("termsModal");
+
+// Toggle Dropdown
+menuBtn.addEventListener("click", function(e) {
+    e.stopPropagation();
+    myDropdown.classList.toggle("show");
+});
+
+// Open Modal
+termsLink.addEventListener("click", function() {
+    myDropdown.classList.remove("show");
+    termsModal.style.display = "block";
+});
+
+// Close Modal
+function closeModal() {
+    termsModal.style.display = "none";
+}
+document.getElementById("closeModalBtn").onclick = closeModal;
+document.getElementById("confirmTermsBtn").onclick = closeModal;
+
+// Global Click Handler
+window.onclick = function(event) {
+    if (event.target == termsModal) {
+        closeModal();
+    }
+    if (!event.target.matches('#menuBtn')) {
+        if (myDropdown.classList.contains('show')) {
+            myDropdown.classList.remove('show');
+        }
     }
 }
 
