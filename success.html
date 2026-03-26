@@ -49,45 +49,56 @@ body {
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js"></script>
 
 <script>
-// 🔹 Supabase setup
+// 1. Supabase setup
 const supabase = window.supabase.createClient(
     "https://zhinkuoqxsmotnbsjdue.supabase.co",
     "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InpoaW5rdW9xeHNtb3RuYnNqZHVlIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzIzOTc1MzIsImV4cCI6MjA4Nzk3MzUzMn0.Kw5BDJDH9WOAiE3a-P6ylQiseErYG-mHCFi5fgamnUY"
 );
 
-// 🔹 Get reference from URL
+// 2. Get reference from URL
 const params = new URLSearchParams(window.location.search);
 const ref = params.get("ref");
 
-// 🔹 Check payment status
-async function checkPayment() {
+// 3. Logic Variables
+let attempts = 0;
+const maxAttempts = 20; // Stop after 1 minute (20 tries * 3 seconds)
 
+// 4. The main function (PASTE REPLACEMENT HERE)
+async function checkPayment() {
+    attempts++;
+    
     if (!ref) {
-        showError("No reference found");
+        showError("No reference found in URL");
         return;
     }
 
-    // 🔥 Check your transactions table
+    if (attempts > maxAttempts) {
+        showError("Verification timed out. Please refresh or contact support.");
+        return;
+    }
+
     const { data, error } = await supabase
         .from("transactions")
-        .select("*")
+        .select("status, phone, bundle_id") 
         .eq("paystack_ref", ref)
-        .single();
+        .maybeSingle(); 
 
-    if (error || !data) {
-        // Still waiting (Make.com hasn't saved yet)
+    // If data is null, it means Make.com hasn't created the row yet
+    if (!data) {
+        console.log("Still waiting for database record... Attempt: " + attempts);
         setTimeout(checkPayment, 3000);
         return;
     }
 
-    if (data.status === "paid") {
+    // Check the status value
+    if (data.status.toLowerCase() === "paid") {
         showSuccess(data);
     } else {
-        showError("Payment not successful");
+        showError("Payment not successful. Status: " + data.status);
     }
 }
 
-// ✅ Success UI
+// 5. UI Helper Functions
 function showSuccess(data) {
     document.getElementById("status").innerText = "✅ Payment Successful!";
     document.getElementById("loader").style.display = "none";
@@ -98,16 +109,14 @@ function showSuccess(data) {
     `;
 }
 
-// ❌ Error UI
 function showError(msg) {
     document.getElementById("status").innerText = "❌ Failed";
     document.getElementById("loader").style.display = "none";
     document.getElementById("message").innerText = msg;
 }
 
-// Start checking
+// 6. Start the loop
 checkPayment();
-
 </script>
 
 </body>
