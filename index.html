@@ -220,6 +220,7 @@ async function handleSuccess(response, phone, bundle, btn, originalBtnText) {
                 reference: response.reference,
                 phone: phone,
                 bundle_id: bundle.id,
+               bundle_size: bundle.size, 
                 amount: bundle.price
             })
         });
