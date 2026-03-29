@@ -418,19 +418,22 @@ async function processPayment(response, phone, bundle) {
         });
 
         if (res.ok) {
-            alert("Success! Your data is being processed. You will receive a confirmation SMS shortly.");
-            location.reload();
+            // UPDATED: Instead of an alert, redirect to your glassy loader page
+            // We pass the Paystack reference so the next page knows what to look for
+            window.location.href = `success.html?ref=${response.reference}`;
         } else {
             throw new Error("Webhook Error");
         }
 
     } catch (err) {
-        // Fallback: If the webhook fails but payment was successful
-        alert(`Payment Confirmed! Ref: ${response.reference}. If data doesn't arrive in 5 mins, contact Support.`);
+        // Fallback: This is your "Plan B" if the webhook fails
+        alert(`Payment Confirmed! Ref: ${response.reference}. If data doesn't arrive, contact Support.`);
         buyBtn.disabled = false;
         buyBtn.innerText = "Buy Now";
     }
 }
+
+
 </script>
 
 </body>

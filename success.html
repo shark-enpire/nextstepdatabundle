@@ -8,78 +8,118 @@
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
 <style>
-body {
-    font-family: Arial;
-    background: #0f172a;
-    color: white;
-    text-align: center;
-    padding: 50px;
-}
+    :root {
+        --glass-bg: rgba(255, 255, 255, 0.05);
+        --glass-border: rgba(255, 255, 255, 0.1);
+        --accent: #10b981; /* Emerald 500 */
+    }
 
-.card {
-    background: #1e293b;
-    padding: 30px;
-    border-radius: 12px;
-    display: inline-block;
-}
+    body {
+        font-family: 'Inter', -apple-system, sans-serif;
+        /* Dynamic mesh gradient background */
+        background: radial-gradient(circle at top left, #1e293b, #0f172a);
+        background-attachment: fixed;
+        color: #f8fafc;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        min-height: 100vh;
+        margin: 0;
+        padding: 20px;
+      background-image: url('https://i.postimg.cc/nzgZw571/IMG-0622.png');;
+    }
 
-.spinner {
-    border: 4px solid #ccc;
-    border-top: 4px solid #22c55e;
-    border-radius: 50%;
-    width: 40px;
-    height: 40px;
-    animation: spin 1s linear infinite;
-    margin: auto;
-}
+    .card {
+        background: var(--glass-bg);
+        backdrop-filter: blur(12px); /* The "Glass" effect */
+        -webkit-backdrop-filter: blur(12px);
+        border: 1px solid var(--glass-border);
+        box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+        padding: 40px;
+        border-radius: 24px;
+        max-width: 400px;
+        width: 100%;
+        text-align: center;
+    }
 
-@keyframes spin {
-    0% { transform: rotate(0deg); }
-    100% { transform: rotate(360deg); }
-}
+    h2 {
+        font-weight: 600;
+        letter-spacing: -0.02em;
+        margin-bottom: 24px;
+    }
+
+    #message {
+        color: #94a3b8;
+        line-height: 1.6;
+    }
+
+    /* Modern Minimal Spinner */
+    .spinner {
+        width: 48px;
+        height: 48px;
+        border: 3px solid rgba(16, 185, 129, 0.1);
+        border-radius: 50%;
+        border-top-color: var(--accent);
+        animation: spin 0.8s cubic-bezier(0.5, 0, 0.5, 1) infinite;
+        margin: 24px auto;
+    }
+
+    .btn {
+        margin-top: 20px;
+        padding: 12px 24px;
+        background: var(--accent);
+        color: white;
+        border: none;
+        border-radius: 12px;
+        font-weight: 600;
+        cursor: pointer;
+        transition: transform 0.2s, background 0.2s;
+    }
+
+    .btn:hover {
+        background: #059669;
+        transform: translateY(-1px);
+    }
+
+    @keyframes spin {
+        to { transform: rotate(360deg); }
+    }
 </style>
 </head>
 
 <body>
 
 <div class="card">
-    <h2 id="status">⏳ Verifying payment...</h2>
+    <h2 id="status">Verifying Payment</h2>
     <div class="spinner" id="loader"></div>
-    <p id="message"> We are confirming your payment securely... </p>
+    <p id="message">Please wait while we confirm your transaction securely.</p>
 </div>
- 
 
 <script>
-// 1. Supabase setup
 const supabaseClient = window.supabase.createClient(
     "https://zhinkuoqxsmotnbsjdue.supabase.co",
     "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InpoaW5rdW9xeHNtb3RuYnNqZHVlIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzIzOTc1MzIsImV4cCI6MjA4Nzk3MzUzMn0.Kw5BDJDH9WOAiE3a-P6ylQiseErYG-mHCFi5fgamnUY"
 );
 
-// 2. Get reference from URL
 const params = new URLSearchParams(window.location.search);
 const ref = params.get("ref");
 
-// 3. Logic Variables
 let attempts = 0;
 const maxAttempts = 20; 
 
-// 4. The main function (Updated with Error Handling)
 async function checkPayment() {
     if (!ref) {
-        showError("No payment reference found in the URL.");
+        showError("No payment reference found.");
         return; 
     }
 
     attempts++;
-
     if (attempts > maxAttempts) {
-        showError("Verification timed out. Please refresh or contact support.");
+        showError("Timed out. Please contact support.");
         return;
     }
 
     try {
-        // Query the database
         const { data, error } = await supabaseClient
             .from("transactions")
             .select("status, phone, bundle_id") 
@@ -88,60 +128,51 @@ async function checkPayment() {
 
         if (error) throw error;
 
-        // If data is null, the row hasn't been created by Make.com yet
         if (!data) {
-            console.log(`Attempt ${attempts}/${maxAttempts}: Waiting for record...`);
             setTimeout(checkPayment, 3000);
             return;
         }
 
-        // Final status verification
         const currentStatus = data.status?.toLowerCase();
 
         if (currentStatus === "paid") {
             showSuccess(data);
         } else if (currentStatus === "failed") {
-            showError("Payment failed. Please check your bank or try again.");
+            showError("Payment failed. Please try again.");
         } else {
-            // If status is 'pending' or anything else, keep polling
-            console.log(`Status is ${currentStatus}. Retrying...`);
             setTimeout(checkPayment, 3000);
         }
 
     } catch (err) {
         console.error("Connection Error:", err.message);
-        showError("Connection issue. Still trying to verify...");
-        setTimeout(checkPayment, 5000); // Wait slightly longer if there's a network glitch
+        setTimeout(checkPayment, 5000);
     }
 }
 
-// 5. UI Helper Functions
-
 function showSuccess(data) {
-    document.getElementById("status").innerText = "✅ Payment Successful!";
+    document.getElementById("status").innerText = "Success!";
     document.getElementById("loader").style.display = "none";
     document.getElementById("message").innerHTML = `
         Your bundle is being processed.<br><br>
-        📱 ${data.phone}<br>
-        📦 Bundle ID: ${data.bundle_id}<br><br>
-        <button onclick="window.location.href='index.html'" style="padding:10px 20px; background:#22c55e; color:white; border:none; border-radius:5px; cursor:pointer;">
+        <div style="background: rgba(255,255,255,0.03); padding: 15px; border-radius: 12px; text-align: left; font-size: 0.9em;">
+            <strong>Phone:</strong> ${data.phone}<br>
+            <strong>Bundle:</strong> ${data.bundle_id}
+        </div>
+        <button class="btn" onclick="window.location.href='index.html'">
             Buy Another Bundle
         </button>
     `;
-    
-    // Remove the automatic setTimeout redirect or make it longer (e.g., 10 seconds)
 }
 
 function showError(msg) {
-    document.getElementById("status").innerText = "❌ Failed";
+    document.getElementById("status").innerText = "Payment Error";
+    document.getElementById("status").style.color = "#ef4444";
     document.getElementById("loader").style.display = "none";
     document.getElementById("message").innerText = msg;
 }
 
-// 6. Start the loop
 checkPayment();
 </script>
-
 
 </body>
 </html>
