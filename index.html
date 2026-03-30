@@ -330,38 +330,39 @@ async function buyData() {
    HANDLE SUCCESS
 ========================= */
 
-async function handleSuccess(response, phone, bundle, btn, originalBtnText) {
+async function handleSuccess(response, phone, bundle) {
+    // Use the global buyBtn since 'btn' isn't passed in correctly
+    const btn = document.getElementById("buyBtn");
     btn.innerText = "Updating Account...";
     
     try {
-        // IMPORTANT: Replace with your actual Make.com Webhook URL
         const webhookUrl = "https://hook.us2.make.com/pfjsqrsfwoavl4rymqn3vvi2johjh6v8";
+
+        const payload = {
+            status: "paid",
+            reference: response.reference, // From Paystack
+            phone: phone,                  // From input
+            bundle_id: bundle.id,          // From Supabase data
+            bundle_size: bundle.size,      // From Supabase data
+            amount: bundle.price,          // From Supabase data
+            timestamp: new Date().toISOString() // Added timestamp
+        };
 
         const res = await fetch(webhookUrl, {
             method: "POST",
             headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({
-                status: "paid",
-                reference: response.reference,
-                phone: phone,
-                bundle_id: bundle.id,
-               bundle_size: bundle.size, 
-                amount: bundle.price
-            })
+            body: JSON.stringify(payload)
         });
 
         if (!res.ok) throw new Error("Webhook failed");
 
-        // Redirect on success
         window.location.href = `success.html?ref=${response.reference}`;
 
     } catch (err) {
         console.error("❌ Webhook Error:", err);
-
-        alert(`Payment received!\nRef: ${response.reference}\nIf data delays, contact support.`);
-
-        buyBtn.disabled = false;
-        buyBtn.innerText = "Buy Now";
+        alert(`Payment received! Ref: ${response.reference}. Contact support if data isn't received.`);
+        btn.disabled = false;
+        btn.innerText = "Buy Now";
     }
 }
 
