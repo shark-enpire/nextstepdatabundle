@@ -407,16 +407,17 @@ async function processPayment(response, phone, bundle) {
         const res = await fetch(webhookUrl, {
             method: "POST",
             headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({
-                status: "paid",
-                reference: response.reference,
-                phone: phone,
-                network: bundle.network,
-                bundle_size: bundle.size,
-                amount: bundle.price,
-                bundle_id: bundle.id
-                timestamp: new Date().toISOString()
-            })
+          body: JSON.stringify({
+    status: "paid",
+    reference: response.reference,
+    phone: phone,
+    network: bundle.network,
+    bundle_size: bundle.size,
+    amount: bundle.price,
+    bundle_id: bundle.id, // Added comma
+    timestamp: new Date().toISOString()
+})
+
         });
 
         if (res.ok) {
