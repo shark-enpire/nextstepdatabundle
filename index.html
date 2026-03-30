@@ -397,9 +397,22 @@ async function buyData() {
 // =========================
 // FINAL PROCESSING (WEBHOOK)
 // =========================
+
 async function processPayment(response, phone, bundle) {
     const buyBtn = document.getElementById('buyBtn');
     buyBtn.innerText = "Processing Data...";
+
+    // Log the data to the console for debugging
+    console.log("Data being sent to Webhook:", {
+        status: "paid",
+        reference: response.reference,
+        phone: phone,
+        network: bundle.network,
+        bundle_size: bundle.size,
+        amount: bundle.price,
+        bundle_id: bundle.id, // This is what you want
+        timestamp: new Date().toISOString()
+    });
 
     try {
         const webhookUrl = "https://hook.us2.make.com/pfjsqrsfwoavl4rymqn3vvi2johjh6v8";
@@ -407,29 +420,26 @@ async function processPayment(response, phone, bundle) {
         const res = await fetch(webhookUrl, {
             method: "POST",
             headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-    status: "paid",
-    reference: response.reference,
-    phone: phone,
-    network: bundle.network,
-    bundle_size: bundle.size,
-    amount: bundle.price,
-    bundle_id: bundle.id, // Added comma
-    timestamp: new Date().toISOString()
-})
-
+            body: JSON.stringify({
+                status: "paid",
+                reference: response.reference,
+                phone: phone,
+                network: bundle.network,
+                bundle_size: bundle.size,
+                amount: bundle.price,
+                bundle_id: bundle.id, // Ensure this is sent
+                timestamp: new Date().toISOString()
+            })
         });
 
         if (res.ok) {
-            // UPDATED: Instead of an alert, redirect to your glassy loader page
-            // We pass the Paystack reference so the next page knows what to look for
             window.location.href = `success.html?ref=${response.reference}`;
         } else {
             throw new Error("Webhook Error");
         }
 
     } catch (err) {
-        // Fallback: This is your "Plan B" if the webhook fails
+        console.error("Webhook failed:", err);
         alert(`Payment Confirmed! Ref: ${response.reference}. If data doesn't arrive, contact Support.`);
         buyBtn.disabled = false;
         buyBtn.innerText = "Buy Now";
