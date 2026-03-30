@@ -179,62 +179,91 @@ const _supabase = supabase.createClient(
 
 let allBundles = [];
 
-document.addEventListener("DOMContentLoaded", () => {
-    loadBundles();
+// Disable button initially
+const buyBtn = document.getElementById("buyBtn");
+buyBtn.disabled = true;
 
+/* =========================
+   INIT
+========================= */
+document.addEventListener("DOMContentLoaded", () => {
+    initUI();
+    loadBundles();
+});
+
+function initUI() {
     const networkSelect = document.getElementById('network');
+    const menuBtn = document.getElementById("menuBtn");
+    const menu = document.getElementById("menu");
+
+    // Network filter
     if (networkSelect) {
         networkSelect.addEventListener('change', (e) => {
-            const selectedNetwork = e.target.value;
-            const filtered = selectedNetwork 
-                ? allBundles.filter(b => b.network.toLowerCase() === selectedNetwork.toLowerCase()) 
+            const selected = e.target.value;
+            const filtered = selected
+                ? allBundles.filter(b => b.network.toLowerCase() === selected.toLowerCase())
                 : allBundles;
+
             populateBundles(filtered);
         });
     }
 
-    const menuBtn = document.getElementById("menuBtn");
-    const menu = document.getElementById("menu");
+    // Dropdown
     if (menuBtn && menu) {
         menuBtn.addEventListener("click", (e) => {
             e.stopPropagation();
             menu.classList.toggle("show");
         });
-        window.addEventListener("click", () => menu.classList.remove("show"));
+
+        window.addEventListener("click", () => {
+            menu.classList.remove("show");
+        });
     }
 
+    // Modal
     const termsLink = document.getElementById("termsLink");
     const modal = document.getElementById("termsModal");
     const closeBtn = document.getElementById("closeModalBtn");
     const confirmBtn = document.getElementById("confirmTermsBtn");
 
-    if (termsLink && modal) {
+    if (termsLink) {
         termsLink.addEventListener("click", (e) => {
             e.preventDefault();
             modal.style.display = "block";
-            if (menu) menu.classList.remove("show");
+            menu.classList.remove("show");
         });
     }
 
-    if (closeBtn) closeBtn.addEventListener("click", () => modal.style.display = "none");
-    if (confirmBtn) confirmBtn.addEventListener("click", () => modal.style.display = "none");
-});
+    if (closeBtn) closeBtn.onclick = () => modal.style.display = "none";
+    if (confirmBtn) confirmBtn.onclick = () => modal.style.display = "none";
+}
 
+/* =========================
+   LOAD BUNDLES
+========================= */
 async function loadBundles() {
     try {
         const { data, error } = await _supabase.from('bundles').select('*');
+
         if (error) throw error;
-        allBundles = data;
-        populateBundles(data);
+
+        allBundles = data || [];
+        populateBundles(allBundles);
+
+        // Enable button AFTER load
+        buyBtn.disabled = false;
+
     } catch (err) {
-        console.error("Fetch Error:", err.message);
+        console.error("❌ Bundle Load Error:", err.message);
+        alert("Failed to load bundles. Refresh page.");
     }
 }
 
 function populateBundles(data) {
     const bundleSelect = document.getElementById('bundle');
-    if (!bundleSelect) return;
-    bundleSelect.innerHTML = '<option value="" selected disabled>Select a data bundle</option>';
+
+    bundleSelect.innerHTML = `<option value="" disabled selected>Select Bundle</option>`;
+
     data.forEach(item => {
         const option = document.createElement('option');
         option.value = item.id;
@@ -243,25 +272,32 @@ function populateBundles(data) {
     });
 }
 
+/* =========================
+   BUY DATA
+========================= */
 async function buyData() {
-    const phone = document.getElementById('phone').value;
+    const phone = document.getElementById('phone').value.trim();
     const bundleId = document.getElementById('bundle').value;
-    const buyBtn = document.getElementById('buyBtn');
 
     if (!phone || phone.length < 10) {
-        alert("Please enter a valid phone number.");
+        alert("Enter valid phone number.");
         return;
     }
+
     if (!bundleId) {
-        alert("Please select a data bundle.");
+        alert("Select a bundle.");
         return;
     }
 
     const bundle = allBundles.find(b => String(b.id) === String(bundleId));
-    const originalText = buyBtn.innerText;
-    
+
+    if (!bundle) {
+        alert("Invalid bundle. Reload page.");
+        return;
+    }
+
     buyBtn.disabled = true;
-    buyBtn.innerText = "Initializing...";
+    buyBtn.innerText = "Processing...";
 
     const handler = PaystackPop.setup({
         key: 'pk_live_68410a36c97591a8e61aa8fc998b9e39cf51b92f',
@@ -269,53 +305,70 @@ async function buyData() {
         amount: Math.round(bundle.price * 100),
         currency: "GHS",
         ref: 'DATA-' + Date.now(),
+
         metadata: {
             custom_fields: [
-                { display_name: "Bundle ID", variable_name: "bundle_id", value: bundle.id },
-                { display_name: "Customer Phone", variable_name: "phone_number", value: phone }
+                { display_name: "Phone", value: phone },
+                { display_name: "Bundle", value: bundle.size }
             ]
         },
+
         callback: function(response) {
-            // Corrected function call and variables
-            handleSuccess(response, phone, bundle, buyBtn, originalText);
+            handleSuccess(response, phone, bundle);
         },
+
         onClose: function() {
             buyBtn.disabled = false;
-            buyBtn.innerText = originalText;
+            buyBtn.innerText = "Buy Now";
         }
     });
+
     handler.openIframe();
 }
 
-async function handleSuccess(response, phone, bundle, btn, originalBtnText) {
-    btn.innerText = "Updating Account...";
+/* =========================
+   HANDLE SUCCESS
+========================= */
+async function handleSuccess(response, phone, bundle) {
+
+    console.log("✅ Payment Success:", response);
+
+    const payload = {
+        status: "paid",
+        reference: response.reference,
+        phone: phone,
+        bundle_id: bundle.id,
+        bundle_size: bundle.size,
+        amount: bundle.price,
+        network: bundle.network
+    };
+
+    console.log("📦 Sending to webhook:", payload);
+
     try {
-        const webhookUrl = "https://hook.us2.make.com/pfjsqrsfwoavl4rymqn3vvi2johjh6v8";
-        const res = await fetch(webhookUrl, {
+        const res = await fetch("https://hook.us2.make.com/pfjsqrsfwoavl4rymqn3vvi2johjh6v8", {
             method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({
-                status: "paid",
-                reference: response.reference,
-                phone: phone,
-                bundle_id: bundle.id,
-                bundle_size: bundle.size, 
-                amount: bundle.price
-            })
+            headers: {
+                "Content-Type": "application/json"
+            },
+            body: JSON.stringify(payload)
         });
 
-        if (res.ok) {
-            window.location.href = `success.html?ref=${response.reference}`;
-        } else {
-            throw new Error("Webhook Error");
-        }
+        if (!res.ok) throw new Error("Webhook failed");
+
+        // Redirect on success
+        window.location.href = `success.html?ref=${response.reference}`;
+
     } catch (err) {
-        console.error("Webhook failed:", err);
-        alert(`Payment Confirmed! Ref: ${response.reference}. Contact Support if data doesn't arrive.`);
-        btn.disabled = false;
-        btn.innerText = "Buy Now";
+        console.error("❌ Webhook Error:", err);
+
+        alert(`Payment received!\nRef: ${response.reference}\nIf data delays, contact support.`);
+
+        buyBtn.disabled = false;
+        buyBtn.innerText = "Buy Now";
     }
 }
+
 </script>
 
 </body>
