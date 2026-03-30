@@ -172,21 +172,17 @@
 <footer>© 2026 NextStep Data</footer>
 
 <script>
+
 const _supabase = supabase.createClient(
     "https://zhinkuoqxsmotnbsjdue.supabase.co", 
     "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InpoaW5rdW9xeHNtb3RuYnNqZHVlIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzIzOTc1MzIsImV4cCI6MjA4Nzk3MzUzMn0.Kw5BDJDH9WOAiE3a-P6ylQiseErYG-mHCFi5fgamnUY"
 );
 
 let allBundles = [];
-
-// Disable button initially
 const buyBtn = document.getElementById("buyBtn");
-buyBtn.disabled = true;
 
-/* =========================
-   INIT
-========================= */
 document.addEventListener("DOMContentLoaded", () => {
+    if (buyBtn) buyBtn.disabled = true;
     initUI();
     loadBundles();
 });
@@ -196,71 +192,62 @@ function initUI() {
     const menuBtn = document.getElementById("menuBtn");
     const menu = document.getElementById("menu");
 
-    // Network filter
     if (networkSelect) {
         networkSelect.addEventListener('change', (e) => {
             const selected = e.target.value;
             const filtered = selected
                 ? allBundles.filter(b => b.network.toLowerCase() === selected.toLowerCase())
                 : allBundles;
-
             populateBundles(filtered);
         });
     }
 
-    // Dropdown
     if (menuBtn && menu) {
         menuBtn.addEventListener("click", (e) => {
             e.stopPropagation();
             menu.classList.toggle("show");
         });
-
-        window.addEventListener("click", () => {
-            menu.classList.remove("show");
-        });
+        window.addEventListener("click", () => menu.classList.remove("show"));
     }
 
-    // Modal
-    const termsLink = document.getElementById("termsLink");
     const modal = document.getElementById("termsModal");
+    const termsLink = document.getElementById("termsLink");
     const closeBtn = document.getElementById("closeModalBtn");
     const confirmBtn = document.getElementById("confirmTermsBtn");
 
     if (termsLink) {
-        termsLink.addEventListener("click", (e) => {
+        termsLink.onclick = (e) => {
             e.preventDefault();
             modal.style.display = "block";
-            menu.classList.remove("show");
-        });
+        };
     }
-
     if (closeBtn) closeBtn.onclick = () => modal.style.display = "none";
     if (confirmBtn) confirmBtn.onclick = () => modal.style.display = "none";
 }
 
-/* =========================
-   LOAD BUNDLES
-========================= */
 async function loadBundles() {
     try {
+        console.log("Fetching bundles...");
         const { data, error } = await _supabase.from('bundles').select('*');
 
         if (error) throw error;
 
         allBundles = data || [];
+        console.log("Bundles loaded:", allBundles);
+        
         populateBundles(allBundles);
 
-        // Enable button AFTER load
-        buyBtn.disabled = false;
+        if (buyBtn) buyBtn.disabled = false;
 
     } catch (err) {
         console.error("❌ Bundle Load Error:", err.message);
-        alert("Failed to load bundles. Refresh page.");
+        alert("Failed to load bundles. Please refresh.");
     }
 }
 
 function populateBundles(data) {
     const bundleSelect = document.getElementById('bundle');
+    if (!bundleSelect) return;
 
     bundleSelect.innerHTML = `<option value="" disabled selected>Select Bundle</option>`;
 
@@ -272,13 +259,6 @@ function populateBundles(data) {
     });
 }
 
-/* =========================
-   BUY DATA
-========================= */
-
-/* =========================
-   BUY DATA (Optimized for Make.com)
-========================= */
 async function buyData() {
     const phone = document.getElementById('phone').value.trim();
     const bundleId = document.getElementById('bundle').value;
@@ -293,65 +273,34 @@ async function buyData() {
         return;
     }
 
-    // Find the bundle details from our local array
     const bundle = allBundles.find(b => String(b.id) === String(bundleId));
+    if (!bundle) return;
 
-    if (!bundle) {
-        alert("Invalid bundle selected. Please refresh the page.");
-        return;
-    }
-
-    const buyBtn = document.getElementById("buyBtn");
     buyBtn.disabled = true;
     buyBtn.innerText = "Processing...";
 
     const handler = PaystackPop.setup({
         key: 'pk_live_68410a36c97591a8e61aa8fc998b9e39cf51b92f',
         email: `${phone}@nextstepdata.com`,
-        amount: Math.round(bundle.price * 100), // Paystack expects amount in pesewas
+        amount: Math.round(bundle.price * 100),
         currency: "GHS",
         ref: 'DATA-' + Date.now(),
-        
-        // Metadata ensures Make.com receives these specific variables
         metadata: {
             phone: phone,
             bundle_size: bundle.size,
-            bundle_id: bundle.id,
-            amount: bundle.price,
-            custom_fields: [
-                { display_name: "Phone Number", variable_name: "phone", value: phone },
-                { display_name: "Bundle Size", variable_name: "bundle_size", value: bundle.size },
-                { display_name: "Bundle ID", variable_name: "bundle_id", value: bundle.id }
-            ]
+            bundle_id: bundle.id
         },
-
         callback: function(response) {
-            // Redirect to success page; Paystack Webhook handles the Make.com trigger
             window.location.href = `success.html?ref=${response.reference}`;
         },
-
         onClose: function() {
             buyBtn.disabled = false;
             buyBtn.innerText = "Buy Now";
         }
     });
-
     handler.openIframe();
 }
 
-// DELETE the entire handleSuccess function from your script below this line.
-
-        if (!res.ok) throw new Error("Webhook failed");
-
-        window.location.href = `success.html?ref=${response.reference}`;
-
-    } catch (err) {
-        console.error("❌ Webhook Error:", err);
-        alert(`Payment received! Ref: ${response.reference}. Contact support if data isn't received.`);
-        btn.disabled = false;
-        btn.innerText = "Buy Now";
-    }
-}
 
 </script>
 
