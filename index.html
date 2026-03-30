@@ -13,54 +13,39 @@
         /* RESET & BASE */
         * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Inter', sans-serif; }
 
-body {
-  color: white;
-  min-height: 100vh;
-  margin: 0;
-  /* We move the background logic out of the main body */
-}
+        body {
+            color: white;
+            min-height: 100vh;
+            margin: 0;
+        }
 
-body::before {
-  content: "";
-  position: fixed; /* Pinned to the screen */
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  
-  /* Your Image & Gradient Overlay */
-  background: linear-gradient(rgba(15, 23, 42, 0.7), rgba(2, 6, 23, 0.8)), 
-              url('https://i.postimg.cc/nzgZw571/IMG-0622.png');
-  
-  background-size: cover;
-  background-position: center;
-  background-repeat: no-repeat;
-  
-  /* Puts the image behind all your text/cards */
-  z-index: -1; 
-  
-  /* Ensures no weird jumping on mobile scroll */
-  will-change: transform; 
-}
-
+        body::before {
+            content: "";
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(rgba(15, 23, 42, 0.7), rgba(2, 6, 23, 0.8)), 
+                        url('https://i.postimg.cc/nzgZw571/IMG-0622.png');
+            background-size: cover;
+            background-position: center;
+            background-repeat: no-repeat;
+            z-index: -1; 
+            will-change: transform; 
+        }
 
         /* NAVBAR */
         .header {
             display: flex; justify-content: space-between; align-items: center;
             padding: 10px 20px; backdrop-filter: blur(10px);
-            background: rgba(15, 23, 42, 0.6); border-bottom: 1px solid rgba(255,255,255,0.1);
-   border-color: yellow;
-
+            background: rgba(15, 23, 42, 0.6); border-bottom: 1px solid yellow;
         }
 
-      .logo img {
-  width: 60px;          /* Increased from 40px */
-  height: 60px;         /* Increased from 40px */
-  border-radius: 50%;   /* Keeps it circular */
-  object-fit: cover;    /* Ensures the image fills the circle without stretching */
-  border: 2px solid rgba(255, 255, 255, 0.2); /* Adds a slight border to make it pop */
-}
-
+        .logo img {
+            width: 60px; height: 60px; border-radius: 50%;
+            object-fit: cover; border: 2px solid rgba(255, 255, 255, 0.2);
+        }
 
         /* DROPDOWN */
         .dropdown { position: relative; }
@@ -85,14 +70,13 @@ body::before {
         .card {
             background: rgba(255,255,255,0.03); backdrop-filter: blur(12px);
             padding: 24px; margin: 20px auto; border-radius: 20px;
-            max-width: 400px; border: 1px solid rgba(255,255,255,0.1);
+            max-width: 400px; border: 1px solid blue;
             box-shadow: 0 10px 30px rgba(0,0,0,0.5);
-   border-color: blue;   
-    }
+        }
 
         select, input {
             width: 100%; padding: 14px; margin-top: 15px; border-radius: 10px;
-            border: 1px solid rgba(255,255,255,0.1); background: rgba(0,0,0,0.2);
+            border: 1px solid blue; background: rgba(0,0,0,0.2);
             color: white; outline: none; font-size: 1rem;
         }
 
@@ -104,86 +88,31 @@ body::before {
         }
         .main-btn:disabled { opacity: 0.6; cursor: not-allowed; }
 
-        /* ACTIONS */
         .actions { display: flex; justify-content: space-between; max-width: 400px; margin: 20px auto; gap: 10px; }
-        .btn-sm { flex: 1; text-align: center; padding: 10px; border-radius: 8px; text-decoration: none; font-size: 14px; border: none; font-weight: 600; cursor: pointer; 
-
-border-color: blue;
-
-  }
-        .youtube { background: #ef4444; color: white; 
- border-color: blue;
- }
-        .waec { background: #eab308; color: #1e3a8a;
-
-border-color: blue;
-
- }
+        .btn-sm { flex: 1; text-align: center; padding: 10px; border-radius: 8px; text-decoration: none; font-size: 14px; border: 1px solid blue; font-weight: 600; cursor: pointer; }
+        .youtube { background: #ef4444; color: white; }
+        .waec { background: #eab308; color: #1e3a8a; }
 
         footer { text-align: center; font-size: 12px; color: #64748b; margin-top: 40px; padding-bottom: 20px; }
 
+        /* Modal Background */
+        .modal {
+            display: none; position: fixed; z-index: 1000;
+            left: 0; top: 0; width: 100%; height: 100%;
+            background-color: rgba(0,0,0,0.8); backdrop-filter: blur(5px);
+        }
 
-#phone{
+        .modal-content {
+            background-color: #1e293b; margin: 15% auto; padding: 25px;
+            border: 1px solid rgba(255,255,255,0.1); width: 85%;
+            max-width: 500px; border-radius: 15px; position: relative;
+            background-image: url('https://i.postimg.cc/nzgZw571/IMG-0622.png');
+        }
 
-border-color: blue;
-
-}
-
-#bundle{
-
-border-color: blue;
-
-}
-
-#network{
-  border-color: blue;
-}
-
-/* Modal Background */
-.modal {
-  display: none; 
-  position: fixed;
-  z-index: 1000;
-  left: 0; top: 0;
-  width: 100%; height: 100%;
-  background-color: rgba(0,0,0,0.8);
-  backdrop-filter: blur(5px);
-}
-
-/* Modal Box */
-.modal-content {
-  background-color: #1e293b;
-  margin: 15% auto;
-  padding: 25px;
-  border: 1px solid rgba(255,255,255,0.1);
-  width: 85%;
-  max-width: 500px;
-  border-radius: 15px;
-  position: relative;
- background-image: url('https://i.postimg.cc/nzgZw571/IMG-0622.png');
-}
-
-.close {
-  position: absolute;
-  right: 20px; top: 15px;
-  color: #94a3b8;
-  font-size: 28px;
-  cursor: pointer;
-}
-
-.policy-text {
-  margin: 20px 0;
-  font-size: 14px;
-  line-height: 1.6;
-  color: #cbd5e1;
-}
-
-
+        .close { position: absolute; right: 20px; top: 15px; color: #94a3b8; font-size: 28px; cursor: pointer; }
+        .policy-text { margin: 20px 0; font-size: 14px; line-height: 1.6; color: #cbd5e1; }
     </style>
-
-
 </head>
-
 
 <body>
 
@@ -196,8 +125,7 @@ border-color: blue;
         <button id="menuBtn" class="dropbtn">Help ☰</button>
         <div id="menu" class="dropdown-content">
             <a href="https://wa.me/233540753328" target="_blank">Contact Support</a>
-           <a href="#" id="termsLink">Terms & Conditions</a>
-
+            <a href="#" id="termsLink">Terms & Conditions</a>
         </div>
     </div>
 </header>
@@ -212,7 +140,7 @@ border-color: blue;
         <option value="">Select Network</option>
         <option value="MTN">MTN</option>
         <option value="Vodafone">Vodafone</option>
-   <option value="AirtelTigo">AirtelTigo</option>
+        <option value="AirtelTigo">AirtelTigo</option>
     </select>
 
     <select id="bundle">
@@ -237,7 +165,6 @@ border-color: blue;
   </div>
 </div>
 
-
 <div class="actions">
     <a href="https://youtube.com/@loldramaempire?sub_confirmation=1" target="_blank" class="btn-sm youtube">YouTube Channel</a>
     <button class="btn-sm waec">WAEC Checker Cards</button>
@@ -246,7 +173,7 @@ border-color: blue;
 <footer>© 2026 NextStep Data</footer>
 
 <script>
-// 1. SUPABASE CONFIG - Restored with your specific credentials
+// 1. SUPABASE CONFIG
 const _supabase = supabase.createClient(
     "https://zhinkuoqxsmotnbsjdue.supabase.co", 
     "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InpoaW5rdW9xeHNtb3RuYnNqZHVlIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzIzOTc1MzIsImV4cCI6MjA4Nzk3MzUzMn0.Kw5BDJDH9WOAiE3a-P6ylQiseErYG-mHCFi5fgamnUY"
@@ -255,13 +182,8 @@ const _supabase = supabase.createClient(
 let allBundles = [];
 
 document.addEventListener("DOMContentLoaded", () => {
-
-    // =========================
-    // LOAD BUNDLES
-    // =========================
     loadBundles();
 
-    // Filter bundles based on network selection
     const networkSelect = document.getElementById('network');
     if (networkSelect) {
         networkSelect.addEventListener('change', (e) => {
@@ -273,26 +195,16 @@ document.addEventListener("DOMContentLoaded", () => {
         });
     }
 
-    // =========================
-    // DROPDOWN MENU
-    // =========================
     const menuBtn = document.getElementById("menuBtn");
     const menu = document.getElementById("menu");
-
     if (menuBtn && menu) {
         menuBtn.addEventListener("click", (e) => {
             e.stopPropagation();
             menu.classList.toggle("show");
         });
-
-        window.addEventListener("click", () => {
-            menu.classList.remove("show");
-        });
+        window.addEventListener("click", () => menu.classList.remove("show"));
     }
 
-    // =========================
-    // ✅ TERMS MODAL FIX
-    // =========================
     const termsLink = document.getElementById("termsLink");
     const modal = document.getElementById("termsModal");
     const closeBtn = document.getElementById("closeModalBtn");
@@ -301,26 +213,16 @@ document.addEventListener("DOMContentLoaded", () => {
     if (termsLink && modal) {
         termsLink.addEventListener("click", (e) => {
             e.preventDefault();
-            e.stopPropagation(); // Prevents the dropdown from fighting the modal
             modal.style.display = "block";
-            if (menu) menu.classList.remove("show"); // Close menu when modal opens
+            if (menu) menu.classList.remove("show");
         });
     }
 
-    if (closeBtn) closeBtn.addEventListener("click", () => modal.style.display = "none");
-    if (confirmBtn) confirmBtn.addEventListener("click", () => modal.style.display = "none");
-
-    window.addEventListener("click", (e) => {
-        if (e.target === modal) {
-            modal.style.display = "none";
-        }
-    });
+    if (closeBtn) closeBtn.onclick = () => modal.style.display = "none";
+    if (confirmBtn) confirmBtn.onclick = () => modal.style.display = "none";
+    window.onclick = (e) => { if (e.target === modal) modal.style.display = "none"; };
 });
 
-
-// =========================
-// FETCH BUNDLES FROM DATABASE
-// =========================
 async function loadBundles() {
     try {
         const { data, error } = await _supabase.from('bundles').select('*');
@@ -332,33 +234,23 @@ async function loadBundles() {
     }
 }
 
-// =========================
-// POPULATE DROPDOWN UI
-// =========================
 function populateBundles(data) {
     const bundleSelect = document.getElementById('bundle');
     if (!bundleSelect) return;
-    
     bundleSelect.innerHTML = '<option value="" selected disabled>Select a data bundle</option>';
-    
     data.forEach(item => {
         const option = document.createElement('option');
         option.value = item.id;
         option.textContent = `${item.network} ${item.size} - GH₵${item.price}`;
-        option.dataset.price = item.price;
         bundleSelect.appendChild(option);
     });
 }
 
-// =========================
-// INITIATE PAYMENT
-// =========================
 async function buyData() {
     const phone = document.getElementById('phone').value;
     const bundleId = document.getElementById('bundle').value;
     const buyBtn = document.getElementById('buyBtn');
 
-    // Validation
     if (!phone || phone.length < 10) {
         alert("Please enter a valid phone number.");
         return;
@@ -375,39 +267,30 @@ async function buyData() {
     buyBtn.innerText = "Initializing...";
 
     const handler = PaystackPop.setup({
-        key: 'pk_live_68410a36c97591a8e61aa8fc998b9e39cf51b92f', // Your Live Key restored
+        key: 'pk_live_68410a36c97591a8e61aa8fc998b9e39cf51b92f',
         email: `${phone}@nextstepdata.com`,
-        amount: Math.round(bundle.price * 100), // Convert GHS to Pesewas
+        amount: Math.round(bundle.price * 100),
         currency: "GHS",
         ref: 'DATA-' + Math.floor((Math.random() * 1000000000) + 1),
-         custom_fields: [
-                { display_name: "Bundle ID", variable_name: "bundle_id", value: bundle.id },
-                { display_name: "Customer Phone", variable_name: "phone_number", value: phone }
-            ]
+        custom_fields: [
+            { display_name: "Bundle ID", variable_name: "bundle_id", value: bundle.id },
+            { display_name: "Customer Phone", variable_name: "phone_number", value: phone }
+        ],
         callback: function(response) {
-            processPayment(response, phone, bundle, btn, originalBtnText);
+            handleSuccess(response, phone, bundle, buyBtn, originalText);
         },
-
         onClose: function() {
             buyBtn.disabled = false;
             buyBtn.innerText = originalText;
         }
     });
-
     handler.openIframe();
 }
 
-// =========================
-// FINAL PROCESSING (WEBHOOK)
-// =========================
-
 async function handleSuccess(response, phone, bundle, btn, originalBtnText) {
     btn.innerText = "Updating Account...";
-    
     try {
-        // IMPORTANT: Replace with your actual Make.com Webhook URL
         const webhookUrl = "https://hook.us2.make.com/pfjsqrsfwoavl4rymqn3vvi2johjh6v8";
-
         const res = await fetch(webhookUrl, {
             method: "POST",
             headers: { "Content-Type": "application/json" },
@@ -416,7 +299,7 @@ async function handleSuccess(response, phone, bundle, btn, originalBtnText) {
                 reference: response.reference,
                 phone: phone,
                 bundle_id: bundle.id,
-               bundle_size: bundle.size, 
+                bundle_size: bundle.size, 
                 amount: bundle.price
             })
         });
@@ -426,16 +309,13 @@ async function handleSuccess(response, phone, bundle, btn, originalBtnText) {
         } else {
             throw new Error("Webhook Error");
         }
-
     } catch (err) {
         console.error("Webhook failed:", err);
         alert(`Payment Confirmed! Ref: ${response.reference}. If data doesn't arrive, contact Support.`);
-        buyBtn.disabled = false;
-        buyBtn.innerText = "Buy Now";
+        btn.disabled = false;
+        btn.innerText = originalBtnText;
     }
 }
-
-
 </script>
 
 </body>
