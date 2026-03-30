@@ -275,46 +275,59 @@ function populateBundles(data) {
 /* =========================
    BUY DATA
 ========================= */
+
+/* =========================
+   BUY DATA (Optimized for Make.com)
+========================= */
 async function buyData() {
     const phone = document.getElementById('phone').value.trim();
     const bundleId = document.getElementById('bundle').value;
 
     if (!phone || phone.length < 10) {
-        alert("Enter valid phone number.");
+        alert("Enter a valid phone number.");
         return;
     }
 
     if (!bundleId) {
-        alert("Select a bundle.");
+        alert("Please select a bundle.");
         return;
     }
 
+    // Find the bundle details from our local array
     const bundle = allBundles.find(b => String(b.id) === String(bundleId));
 
     if (!bundle) {
-        alert("Invalid bundle. Reload page.");
+        alert("Invalid bundle selected. Please refresh the page.");
         return;
     }
 
+    const buyBtn = document.getElementById("buyBtn");
     buyBtn.disabled = true;
     buyBtn.innerText = "Processing...";
 
     const handler = PaystackPop.setup({
         key: 'pk_live_68410a36c97591a8e61aa8fc998b9e39cf51b92f',
         email: `${phone}@nextstepdata.com`,
-        amount: Math.round(bundle.price * 100),
+        amount: Math.round(bundle.price * 100), // Paystack expects amount in pesewas
         currency: "GHS",
         ref: 'DATA-' + Date.now(),
-
+        
+        // Metadata ensures Make.com receives these specific variables
         metadata: {
+            phone: phone,
+            bundle_size: bundle.size,
+            bundle_id: bundle.id,
+            amount: bundle.price,
             custom_fields: [
-                { display_name: "Phone", value: phone },
-                { display_name: "Bundle", value: bundle.size }
+                { display_name: "Phone Number", variable_name: "phone", value: phone },
+                { display_name: "Bundle Size", variable_name: "bundle_size", value: bundle.size },
+                { display_name: "Bundle ID", variable_name: "bundle_id", value: bundle.id }
             ]
         },
 
         callback: function(response) {
-            handleSuccess(response, phone, bundle);
+            // Redirect to success page; Paystack Webhook handles the Make.com trigger
+            window.location.href = `success.html?ref=${response.reference}`;
         },
 
         onClose: function() {
@@ -326,33 +339,7 @@ async function buyData() {
     handler.openIframe();
 }
 
-/* =========================
-   HANDLE SUCCESS
-========================= */
-
-async function handleSuccess(response, phone, bundle) {
-    // Use the global buyBtn since 'btn' isn't passed in correctly
-    const btn = document.getElementById("buyBtn");
-    btn.innerText = "Updating Account...";
-    
-    try {
-        const webhookUrl = "https://hook.us2.make.com/pfjsqrsfwoavl4rymqn3vvi2johjh6v8";
-
-        const payload = {
-            status: "paid",
-            reference: response.reference, // From Paystack
-            phone: phone,                  // From input
-            bundle_id: bundle.id,          // From Supabase data
-            bundle_size: bundle.size,      // From Supabase data
-            amount: bundle.price,          // From Supabase data
-            timestamp: new Date().toISOString() // Added timestamp
-        };
-
-        const res = await fetch(webhookUrl, {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify(payload)
-        });
+// DELETE the entire handleSuccess function from your script below this line.
 
         if (!res.ok) throw new Error("Webhook failed");
 
