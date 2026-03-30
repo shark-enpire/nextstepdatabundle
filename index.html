@@ -212,6 +212,7 @@ border-color: blue;
         <option value="">Select Network</option>
         <option value="MTN">MTN</option>
         <option value="Vodafone">Vodafone</option>
+   <option value="AirtelTigo">AirtelTigo</option>
     </select>
 
     <select id="bundle">
@@ -378,7 +379,7 @@ async function buyData() {
         email: `${phone}@nextstepdata.com`,
         amount: Math.round(bundle.price * 100), // Convert GHS to Pesewas
         currency: "GHS",
-        ref: 'NS-' + Math.floor((Math.random() * 1000000000) + 1),
+        ref: 'DATA-' + Math.floor((Math.random() * 1000000000) + 1),
 
         callback: function(response) {
             processPayment(response, phone, bundle);
@@ -413,6 +414,7 @@ async function processPayment(response, phone, bundle) {
                 network: bundle.network,
                 bundle_size: bundle.size,
                 amount: bundle.price,
+                bundle_id: bundle.id
                 timestamp: new Date().toISOString()
             })
         });
