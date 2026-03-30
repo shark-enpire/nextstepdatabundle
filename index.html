@@ -380,9 +380,12 @@ async function buyData() {
         amount: Math.round(bundle.price * 100), // Convert GHS to Pesewas
         currency: "GHS",
         ref: 'DATA-' + Math.floor((Math.random() * 1000000000) + 1),
-
+         custom_fields: [
+                { display_name: "Bundle ID", variable_name: "bundle_id", value: bundle.id },
+                { display_name: "Customer Phone", variable_name: "phone_number", value: phone }
+            ]
         callback: function(response) {
-            processPayment(response, phone, bundle);
+            processPayment(response, phone, bundle, btn, originalBtnText);
         },
 
         onClose: function() {
