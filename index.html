@@ -288,7 +288,8 @@ async function buyData() {
         metadata: {
             phone: phone,
             bundle_size: bundle.size,
-            bundle_id: bundle.id
+            bundle_id: bundle.id,
+           network: bundle.network
         },
         callback: function(response) {
             window.location.href = `success.html?ref=${response.reference}`;
