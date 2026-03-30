@@ -398,23 +398,11 @@ async function buyData() {
 // FINAL PROCESSING (WEBHOOK)
 // =========================
 
-async function processPayment(response, phone, bundle) {
-    const buyBtn = document.getElementById('buyBtn');
-    buyBtn.innerText = "Processing Data...";
-
-    // Log the data to the console for debugging
-    console.log("Data being sent to Webhook:", {
-        status: "paid",
-        reference: response.reference,
-        phone: phone,
-        network: bundle.network,
-        bundle_size: bundle.size,
-        amount: bundle.price,
-        bundle_id: bundle.id, // This is what you want
-        timestamp: new Date().toISOString()
-    });
-
+async function handleSuccess(response, phone, bundle, btn, originalBtnText) {
+    btn.innerText = "Updating Account...";
+    
     try {
+        // IMPORTANT: Replace with your actual Make.com Webhook URL
         const webhookUrl = "https://hook.us2.make.com/pfjsqrsfwoavl4rymqn3vvi2johjh6v8";
 
         const res = await fetch(webhookUrl, {
@@ -424,11 +412,9 @@ async function processPayment(response, phone, bundle) {
                 status: "paid",
                 reference: response.reference,
                 phone: phone,
-                network: bundle.network,
-                bundle_size: bundle.size,
-                amount: bundle.price,
-                bundle_id: bundle.id, // Ensure this is sent
-                timestamp: new Date().toISOString()
+                bundle_id: bundle.id,
+               bundle_size: bundle.size, 
+                amount: bundle.price
             })
         });
 
