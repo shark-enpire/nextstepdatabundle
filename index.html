@@ -219,6 +219,7 @@
         display: flex; flex-direction: column;
         align-items: center; justify-content: center;
         gap: 3.5px; cursor: pointer;
+      background-color:  #20b2aa;
     }
     .menu-btn span {
         width: 14px; height: 1.5px;
@@ -788,11 +789,13 @@
                 </div>
             </a>
             <div class="action-card" onclick="showToast('Growth panel coming soon!', 'success')">
-                <div class="action-icon growth">⤴️</div>
-                <div class="action-info">
-                    <strong>Growth panel</strong>
-                    <span>coming soon</span>
-                </div>
+       <a href="engagement.html" class="action-card" target="_blank" rel="noopener noreferrer">
+    <div class="action-icon growth">⤴️</div>
+    <div class="action-info">
+        <strong>Growth panel</strong>
+        <span>Get Your TikTok Followers There</span>
+    </div>
+</a>
             </div>
         </div>
 
@@ -850,6 +853,12 @@
 <div class="toast" id="toast"></div>
 
 <script>
+
+ function openPage() {
+    window.open("engagement.html", "_blank");
+     }
+
+
 const _supabase = supabase.createClient(
     "https://zhinkuoqxsmotnbsjdue.supabase.co",
     "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InpoaW5rdW9xeHNtb3RuYnNqZHVlIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzIzOTc1MzIsImV4cCI6MjA4Nzk3MzUzMn0.Kw5BDJDH9WOAiE3a-P6ylQiseErYG-mHCFi5fgamnUY"
