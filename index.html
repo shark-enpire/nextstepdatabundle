@@ -6,7 +6,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>NextStep Data | Fast & Secure</title>
 
-<link rel="icon" type="image/png" href="https://i.postimg.cc/XYjJ5Rgn/BA5B2E92-54B3-43B4-96AE-DE878C2690D2.png">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><rect width=%22100%22 height=%22100%22 rx=%2220%22 fill=%22%2338BDF8%22/><text y=%221.2em%22 x=%228%22 font-size=%2265%22 font-weight=%22bold%22 font-family=%22Arial%22 fill=%22white%22>NS</text></svg>">
 
 <link rel="icon" href="favicon.ico" type="image/x-icon">
 
@@ -657,6 +657,13 @@
         .phone-shell::after { display: none; }
         .toast { bottom: 24px; }
     }
+
+.net-emoji i {
+    color: var(--accent); /* This makes the icons match your blue theme */
+    font-size: 1.4rem;
+}
+
+
 </style>
 ```
 
@@ -721,21 +728,21 @@
 
         <!-- PURCHASE CARD -->
         <div class="card">
-            <div class="card-title"><span>📡</span> Purchase Data Bundle</div>
+            <div class="card-title"><span> <i class="fas fa-satellite-dish"></i> </span> Purchase Data Bundle</div>
 
             <div class="field-group">
                 <div class="field-label">🌐 Select Network</div>
 
 <div class="network-grid">
     <div class="network-card" data-network="MTN" onclick="selectNetwork('MTN', this)">
-        <div class="net-emoji">📶</div>
+        <div class="net-emoji"> <i class="fas fa-signal"></i> </div>
         <div class="net-name">MTN Ghana</div>
     </div>
     <div class="network-card" data-network="Vodafone" onclick="selectNetwork('Vodafone', this)">
-        <div class="net-emoji">📡</div>
+        <div class="net-emoji"> <i class="fas fa-tower-broadcast"></i> </div>
         <div class="net-name">Telecel</div> </div>
     <div class="network-card" data-network="AirtelTigo" onclick="selectNetwork('AirtelTigo', this)">
-        <div class="net-emoji">📱</div>
+        <div class="net-emoji"> <i class="fas fa-mobile-screen-button"></i> </div>
         <div class="net-name">AT (AirtelTigo)</div>
     </div>
 </div>
@@ -753,7 +760,7 @@
                 <div class="field-label">📱 Recipient Number</div>
                 <div class="phone-input-wrap">
                     <div class="phone-prefix">
-                        <span class="flag">🇬🇭</span>
+                        <span class="flag"><img src="https://flagcdn.com/w20/gh.png" alt="GH" style="width: 20px; border-radius: 2px;"></span>
                         <span>+233</span>
                     </div>
                     <input type="tel" id="phone" placeholder="054 000 0000" maxlength="10">
@@ -777,7 +784,7 @@
                 <div class="action-icon yt">▶️</div>
                 <div class="action-info">
                     <strong>YouTube</strong>
-                    <span>Watch & Subscribe</span>
+                    <span>Watch [How To Buy] & Subscribe</span>
                 </div>
             </a>
             <div class="action-card" onclick="showToast('Growth panel coming soon!', 'success')">
