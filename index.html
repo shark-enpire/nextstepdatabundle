@@ -1,308 +1,940 @@
 <!DOCTYPE html>
+
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>NextStep Data | Fast & Secure</title>
-
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="https://js.paystack.co/v1/inline.js"></script>
-
     <style>
-        /* RESET & BASE */
-        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Inter', sans-serif; }
 
-        body { color: white; min-height: 100vh; margin: 0; }
+```
+    /* ═══════════════════════════════════════
+       THEME: DARK (default) + LIGHT (device)
+    ═══════════════════════════════════════ */
+    :root {
+        --bg:            #050A14;
+        --surface:       #0D1526;
+        --surface2:      #111E35;
+        --border:        rgba(255,255,255,0.07);
+        --border-accent: rgba(56,189,248,0.3);
+        --accent:        #38BDF8;
+        --accent2:       #0EA5E9;
+        --green:         #22D3A1;
+        --green2:        #10B981;
+        --text:          #F0F6FF;
+        --muted:         #64748B;
+        --muted2:        #94A3B8;
+        --yellow:        #F59E0B;
+        --red:           #EF4444;
+        --radius:        16px;
+        --radius-sm:     10px;
+        --shell-bg:      #0a0f1a;
+        --shell-border:  rgba(255,255,255,0.12);
+        --shell-btn:     #1a1a1a;
+        --header-bg:     rgba(5,10,20,0.85);
+        --card-bg:       rgba(13,21,38,0.85);
+        --input-bg:      rgba(0,0,0,0.3);
+    }
 
+    @media (prefers-color-scheme: light) {
+        :root {
+            --bg:            #F0F5FF;
+            --surface:       #FFFFFF;
+            --surface2:      #EBF1FB;
+            --border:        rgba(0,0,0,0.08);
+            --border-accent: rgba(14,165,233,0.35);
+            --accent:        #0EA5E9;
+            --accent2:       #0284C7;
+            --green:         #059669;
+            --green2:        #047857;
+            --text:          #0F172A;
+            --muted:         #94A3B8;
+            --muted2:        #475569;
+            --yellow:        #D97706;
+            --red:           #DC2626;
+            --shell-bg:      #E2E8F0;
+            --shell-border:  rgba(0,0,0,0.15);
+            --shell-btn:     #CBD5E1;
+            --header-bg:     rgba(240,245,255,0.92);
+            --card-bg:       rgba(255,255,255,0.95);
+            --input-bg:      rgba(0,0,0,0.04);
+        }
+    }
+
+    /* ═══════════════════════════════════════
+       RESET & BASE
+    ═══════════════════════════════════════ */
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    body {
+        font-family: 'DM Sans', sans-serif;
+        color: var(--text);
+        min-height: 100vh;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background: #0d0d0d;
+        position: relative;
+    }
+    @media (prefers-color-scheme: light) {
+        body { background: #C0CFE4; }
+    }
+
+    body::before {
+        content: '';
+        position: fixed; inset: 0; z-index: 0;
+        background:
+            radial-gradient(ellipse 80% 60% at 50% 0%,  rgba(56,189,248,0.07)  0%, transparent 70%),
+            radial-gradient(ellipse 60% 40% at 80% 100%, rgba(34,211,161,0.05) 0%, transparent 60%),
+            linear-gradient(160deg, #040810 0%, #000 60%);
+    }
+    @media (prefers-color-scheme: light) {
         body::before {
-            content: "";
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: linear-gradient(rgba(15, 23, 42, 0.7), rgba(2, 6, 23, 0.8)), 
-                        url('https://i.postimg.cc/nzgZw571/IMG-0622.png');
-            background-size: cover;
-            background-position: center;
-            background-repeat: no-repeat;
-            z-index: -1; 
-            will-change: transform; 
+            background:
+                radial-gradient(ellipse 80% 60% at 50% 0%,  rgba(14,165,233,0.1) 0%, transparent 70%),
+                radial-gradient(ellipse 60% 40% at 80% 100%, rgba(5,150,105,0.07) 0%, transparent 60%),
+                linear-gradient(160deg, #BFCFE4 0%, #C0CFE4 60%);
         }
+    }
 
-        /* NAVBAR */
-        .header {
-            display: flex; justify-content: space-between; align-items: center;
-            padding: 10px 20px; backdrop-filter: blur(10px);
-            background: rgba(15, 23, 42, 0.6); border-bottom: 1px solid yellow;
+    /* ═══════════════════════════════════════
+       PHONE SHELL
+       KEY FIX: height (not min-height) so the
+       flex children are truly constrained and
+       only .screen scrolls internally.
+    ═══════════════════════════════════════ */
+    .phone-shell {
+        position: relative;
+        z-index: 1;
+        width:  390px;
+        height: 844px;
+        background: var(--shell-bg);
+        border-radius: 52px;
+        border: 2px solid var(--shell-border);
+        box-shadow:
+            0 0 0 1px  rgba(0,0,0,0.5),
+            0 0 0 10px var(--shell-btn),
+            0 0 0 11px rgba(0,0,0,0.12),
+            0 60px 120px rgba(0,0,0,0.55),
+            0 20px 40px  rgba(0,0,0,0.35),
+            inset 0 0 0 1px rgba(255,255,255,0.05);
+        overflow: hidden;
+        display: flex;
+        flex-direction: column;
+    }
+
+    /* decorative side buttons */
+    .phone-shell::before {
+        content: '';
+        position: absolute; left: -13px; top: 130px;
+        width: 4px; height: 36px;
+        background: var(--shell-btn);
+        border-radius: 2px 0 0 2px;
+        box-shadow: 0 50px 0 var(--shell-btn), 0 96px 0 var(--shell-btn);
+    }
+    .phone-shell::after {
+        content: '';
+        position: absolute; right: -13px; top: 180px;
+        width: 4px; height: 70px;
+        background: var(--shell-btn);
+        border-radius: 0 2px 2px 0;
+    }
+
+    /* ═══════════════════════════════════════
+       HEADER  —  flex-shrink:0 = never scrolls
+    ═══════════════════════════════════════ */
+    .app-header {
+        flex-shrink: 0;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 14px 20px;
+        background: var(--header-bg);
+        backdrop-filter: blur(24px);
+        -webkit-backdrop-filter: blur(24px);
+        border-bottom: 1px solid var(--border);
+        z-index: 30;
+    }
+
+    .logo-group { display: flex; align-items: center; gap: 10px; }
+    .logo-img {
+        width: 100px; height: 100px;
+        border-radius: 50%; object-fit: cover;
+        border: 1.5px solid var(--border-accent);
+        box-shadow: 0 0 12px rgba(56,189,248,0.2);
+    }
+    .logo-text strong {
+        display: block;
+        font-family: 'Syne', sans-serif;
+        font-weight: 800; font-size: 0.85rem;
+        background: linear-gradient(90deg, var(--accent), var(--green));
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+    }
+    .logo-text span { font-size: 0.62rem; color: var(--muted); }
+
+    .header-right { display: flex; align-items: center; gap: 8px; }
+
+    .status-pill {
+        display: flex; align-items: center; gap: 5px;
+        padding: 3px 8px;
+        background: rgba(34,211,161,0.08);
+        border: 1px solid rgba(34,211,161,0.2);
+        border-radius: 20px;
+        font-size: 0.62rem; font-weight: 600;
+        color: var(--green);
+    }
+    .status-dot {
+        width: 5px; height: 5px; border-radius: 50%;
+        background: var(--green);
+        animation: pulse-dot 2s ease-in-out infinite;
+    }
+    @keyframes pulse-dot {
+        0%,100% { opacity:1; transform:scale(1); }
+        50%      { opacity:.4; transform:scale(.7); }
+    }
+
+    .menu-btn {
+        width: 34px; height: 34px; border-radius: 8px;
+        background: var(--surface2); border: 1px solid var(--border);
+        display: flex; flex-direction: column;
+        align-items: center; justify-content: center;
+        gap: 3.5px; cursor: pointer;
+    }
+    .menu-btn span {
+        width: 14px; height: 1.5px;
+        background: var(--muted2); border-radius: 2px; display: block;
+    }
+
+    .dropdown { position: relative; }
+    .dropdown-content {
+        position: absolute; right: 0; top: calc(100% + 6px);
+        background: var(--surface);
+        border-radius: var(--radius-sm);
+        display: none; min-width: 180px;
+        border: 1px solid var(--border);
+        box-shadow: 0 16px 40px rgba(0,0,0,0.35);
+        overflow: hidden; z-index: 200;
+    }
+    .dropdown-content a {
+        display: flex; align-items: center; gap: 8px;
+        padding: 11px 14px;
+        color: var(--muted2); text-decoration: none;
+        font-size: 0.8rem;
+        border-bottom: 1px solid var(--border);
+        transition: all 0.2s;
+    }
+    .dropdown-content a:last-child { border-bottom: none; }
+    .dropdown-content a:hover { color: var(--text); background: var(--surface2); }
+    .show { display: block !important; }
+
+    /* ═══════════════════════════════════════
+       SCREEN  —  flex:1 + overflow-y = scrolls
+    ═══════════════════════════════════════ */
+    .screen {
+        flex: 1;
+        overflow-y: auto;
+        overflow-x: hidden;
+        position: relative;
+        background: var(--bg);
+        scrollbar-width: none;
+    }
+    .screen::-webkit-scrollbar { display: none; }
+
+    .screen-bg {
+        position: absolute; inset: 0;
+        z-index: 0; pointer-events: none;
+    }
+    .bg-grid {
+        position: absolute; inset: 0;
+        background-image:
+            linear-gradient(rgba(56,189,248,0.04) 1px, transparent 1px),
+            linear-gradient(90deg, rgba(56,189,248,0.04) 1px, transparent 1px);
+        background-size: 40px 40px;
+        animation: drift 30s linear infinite;
+    }
+    @media (prefers-color-scheme: light) {
+        .bg-grid {
+            background-image:
+                linear-gradient(rgba(14,165,233,0.06) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(14,165,233,0.06) 1px, transparent 1px);
         }
+    }
+    @keyframes drift { to { background-position: 40px 40px; } }
 
-        .logo img {
-            width: 60px;
-            height: 60px;
-            border-radius: 50%;
-            object-fit: cover;
-            border: 2px solid rgba(255, 255, 255, 0.2);
+    .bg-orb1 {
+        position: absolute; width: 300px; height: 300px;
+        top: -80px; right: -60px; border-radius: 50%;
+        background: radial-gradient(circle, rgba(56,189,248,0.12), transparent 70%);
+        filter: blur(50px);
+        animation: float1 12s ease-in-out infinite;
+    }
+    .bg-orb2 {
+        position: absolute; width: 250px; height: 250px;
+        bottom: 200px; left: -60px; border-radius: 50%;
+        background: radial-gradient(circle, rgba(34,211,161,0.1), transparent 70%);
+        filter: blur(50px);
+        animation: float2 15s ease-in-out infinite;
+    }
+    @keyframes float1 { 0%,100%{transform:translate(0,0)} 50%{transform:translate(-20px,20px)} }
+    @keyframes float2 { 0%,100%{transform:translate(0,0)} 50%{transform:translate(15px,-15px)} }
+
+    .screen-content {
+        position: relative; z-index: 1;
+        padding-bottom: 28px;
+    }
+
+    /* ═══════════════════════════════════════
+       HERO
+    ═══════════════════════════════════════ */
+    .hero {
+        text-align: center;
+        padding: 28px 20px 20px;
+        animation: fadeUp 0.5s ease both;
+    }
+    @keyframes fadeUp {
+        from { opacity:0; transform:translateY(16px); }
+        to   { opacity:1; transform:translateY(0); }
+    }
+    .hero-badge {
+        display: inline-flex; align-items: center; gap: 5px;
+        padding: 4px 12px;
+        background: rgba(56,189,248,0.08);
+        border: 1px solid rgba(56,189,248,0.2);
+        border-radius: 20px;
+        font-size: 0.67rem; font-weight: 600;
+        color: var(--accent);
+        letter-spacing: 0.06em; text-transform: uppercase;
+        margin-bottom: 14px;
+    }
+    .hero h1 {
+        font-family: 'Syne', sans-serif;
+        font-size: 1.7rem; font-weight: 800;
+        line-height: 1.1; letter-spacing: -0.02em;
+        margin-bottom: 10px;
+    }
+    .hero h1 .highlight {
+        background: linear-gradient(135deg, var(--accent), var(--green));
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+    }
+    .hero p {
+        color: var(--muted2); font-size: 0.82rem;
+        max-width: 260px; margin: 0 auto; line-height: 1.6;
+    }
+    .trust-bar {
+        display: flex; justify-content: center;
+        gap: 10px; margin-top: 16px; flex-wrap: wrap;
+    }
+    .trust-item {
+        display: flex; align-items: center; gap: 4px;
+        font-size: 0.67rem; color: var(--muted);
+        background: rgba(255,255,255,0.03);
+        padding: 4px 10px; border-radius: 20px;
+        border: 1px solid var(--border);
+    }
+
+    /* ═══════════════════════════════════════
+       MAIN CARD
+    ═══════════════════════════════════════ */
+    .card {
+        background: var(--card-bg);
+        backdrop-filter: blur(20px);
+        padding: 20px 18px;
+        margin: 0 16px 16px;
+        border-radius: 20px;
+        border: 1px solid var(--border);
+        box-shadow: 0 16px 50px rgba(0,0,0,0.4), inset 0 1px 0 rgba(255,255,255,0.05);
+        animation: fadeUp 0.5s 0.1s ease both;
+        position: relative; overflow: hidden;
+    }
+    .card::before {
+        content: '';
+        position: absolute; top: 0; left: 0; right: 0; height: 1px;
+        background: linear-gradient(90deg, transparent, var(--accent), transparent);
+        opacity: 0.5;
+    }
+    .card-title {
+        font-family: 'Syne', sans-serif;
+        font-weight: 700; font-size: 0.88rem;
+        margin-bottom: 16px; color: var(--text);
+        display: flex; align-items: center; gap: 7px;
+    }
+    .field-group { margin-bottom: 14px; }
+    .field-label {
+        font-size: 0.67rem; font-weight: 700;
+        color: var(--muted2);
+        text-transform: uppercase; letter-spacing: 0.08em;
+        margin-bottom: 7px;
+        display: flex; align-items: center; gap: 5px;
+    }
+
+    .network-grid {
+        display: grid; grid-template-columns: 1fr 1fr;
+        gap: 8px; margin-bottom: 14px;
+    }
+    .network-card {
+        padding: 12px 10px;
+        border-radius: var(--radius-sm);
+        border: 1px solid var(--border);
+        background: var(--input-bg);
+        cursor: pointer; text-align: center;
+        transition: all 0.2s;
+        display: flex; flex-direction: column;
+        align-items: center; gap: 5px;
+    }
+    .network-card .net-emoji { font-size: 1.2rem; }
+    .network-card .net-name  { font-size: 0.72rem; font-weight: 600; color: var(--muted2); }
+
+    .network-card[data-network="MTN"]                  { background: rgba(245,158,11,0.07); border-color: rgba(245,158,11,0.2); }
+    .network-card[data-network="MTN"].selected         { background: rgba(245,158,11,0.13); border-color: var(--yellow); box-shadow: 0 0 0 2px rgba(245,158,11,0.2); }
+    .network-card[data-network="MTN"].selected .net-name { color: var(--yellow); }
+
+    .network-card[data-network="Vodafone"]                  { background: rgba(239,68,68,0.07); border-color: rgba(239,68,68,0.2); }
+    .network-card[data-network="Vodafone"].selected         { background: rgba(239,68,68,0.13); border-color: var(--red); box-shadow: 0 0 0 2px rgba(239,68,68,0.2); }
+    .network-card[data-network="Vodafone"].selected .net-name { color: var(--red); }
+
+    select, input[type="tel"] {
+        width: 100%; padding: 12px 14px;
+        border-radius: var(--radius-sm);
+        border: 1px solid var(--border);
+        background: var(--input-bg);
+        color: var(--text); outline: none;
+        font-size: 15px; font-family: 'DM Sans', sans-serif;
+        transition: all 0.25s;
+        -webkit-appearance: none; appearance: none;
+    }
+    select {
+        background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%2364748b' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E");
+        background-repeat: no-repeat;
+        background-position: right 14px center;
+        background-color: var(--input-bg);
+        padding-right: 36px; cursor: pointer;
+    }
+    select option { background: #0D1526; color: var(--text); }
+    select:focus, input:focus {
+        border-color: var(--accent);
+        background: rgba(56,189,248,0.04);
+        box-shadow: 0 0 0 3px rgba(56,189,248,0.08);
+    }
+    input::placeholder { color: var(--muted); }
+
+.network-card[data-network="AirtelTigo"] { 
+    background: rgba(56, 189, 248, 0.07); 
+    border-color: rgba(56, 189, 248, 0.2); 
+}
+.network-card[data-network="AirtelTigo"].selected { 
+    background: rgba(56, 189, 248, 0.13); 
+    border-color: var(--accent); 
+    box-shadow: 0 0 0 2px rgba(56, 189, 248, 0.2); 
+}
+.network-card[data-network="AirtelTigo"].selected .net-name { 
+    color: var(--accent); 
+}
+
+
+    .phone-input-wrap {
+        display: flex;
+        border-radius: var(--radius-sm);
+        border: 1px solid var(--border);
+        overflow: hidden;
+        background: var(--input-bg);
+        transition: all 0.25s;
+    }
+    .phone-input-wrap:focus-within {
+        border-color: var(--accent);
+        background: rgba(56,189,248,0.04);
+        box-shadow: 0 0 0 3px rgba(56,189,248,0.08);
+    }
+    .phone-prefix {
+        display: flex; align-items: center; gap: 6px;
+        padding: 12px 12px 12px 14px;
+        border-right: 1px solid var(--border);
+        font-size: 0.8rem; font-weight: 600;
+        color: var(--muted2); white-space: nowrap;
+    }
+    .phone-input-wrap input {
+        border: none; background: transparent;
+        border-radius: 0; box-shadow: none; flex: 1;
+    }
+    .phone-input-wrap input:focus { box-shadow: none; background: transparent; border: none; }
+
+    .price-display {
+        display: flex; align-items: center; justify-content: space-between;
+        padding: 12px 14px;
+        background: rgba(34,211,161,0.06);
+        border: 1px solid rgba(34,211,161,0.15);
+        border-radius: var(--radius-sm);
+        margin-bottom: 14px;
+        opacity: 0; transition: opacity 0.3s;
+    }
+    .price-display.visible { opacity: 1; }
+    .price-label { font-size: 0.75rem; color: var(--muted2); }
+    .price-amount {
+        font-family: 'Syne', sans-serif;
+        font-size: 1.25rem; font-weight: 800;
+        color: var(--green);
+    }
+
+    .main-btn {
+        width: 100%; padding: 14px;
+        background: linear-gradient(135deg, var(--green), var(--green2));
+        border: none; border-radius: var(--radius-sm);
+        font-weight: 700; font-family: 'Syne', sans-serif;
+        font-size: 0.9rem; letter-spacing: 0.02em;
+        color: white; cursor: pointer;
+        transition: all 0.25s;
+        position: relative; overflow: hidden;
+        display: flex; align-items: center; justify-content: center; gap: 7px;
+    }
+    .main-btn::before {
+        content: '';
+        position: absolute; inset: 0;
+        background: linear-gradient(135deg, rgba(255,255,255,0.15), transparent);
+    }
+    .main-btn:hover:not(:disabled) { transform: translateY(-1px); box-shadow: 0 6px 20px rgba(34,211,161,0.4); }
+    .main-btn:active:not(:disabled) { transform: translateY(0); }
+    .main-btn:disabled { opacity: 0.6; cursor: not-allowed; }
+
+    .spinner {
+        width: 14px; height: 14px;
+        border: 2px solid rgba(255,255,255,0.3);
+        border-top-color: white; border-radius: 50%;
+        animation: spin 0.7s linear infinite;
+        display: none;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    /* ═══════════════════════════════════════
+       ACTION CARDS
+    ═══════════════════════════════════════ */
+    .actions {
+        display: grid; grid-template-columns: 1fr 1fr;
+        gap: 10px; margin: 0 16px 20px;
+        animation: fadeUp 0.5s 0.2s ease both;
+    }
+    .action-card {
+        padding: 14px; border-radius: 14px;
+        border: 1px solid var(--border);
+        background: var(--surface);
+        cursor: pointer; text-decoration: none;
+        display: flex; align-items: center; gap: 10px;
+        transition: all 0.25s; color: var(--text);
+    }
+    .action-card:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 6px 20px rgba(0,0,0,0.15);
+        border-color: var(--border-accent);
+    }
+    .action-icon {
+        width: 36px; height: 36px; border-radius: 9px;
+        display: flex; align-items: center; justify-content: center;
+        font-size: 1.1rem; flex-shrink: 0;
+    }
+    .action-icon.yt   { background: rgba(239,68,68,0.15); }
+    .action-icon.growth{ background: rgba(245,158,11,0.15); }
+    .action-info strong { display: block; font-size: 0.75rem; font-weight: 600; margin-bottom: 1px; }
+    .action-info span   { font-size: 0.65rem; color: var(--muted); }
+
+    /* ═══════════════════════════════════════
+       FOOTER
+    ═══════════════════════════════════════ */
+    footer { text-align: center; padding: 4px 20px 12px; }
+    .footer-links { display: flex; justify-content: center; gap: 16px; margin-bottom: 8px; }
+    .footer-links a { font-size: 0.7rem; color: var(--muted); text-decoration: none; transition: color 0.2s; }
+    .footer-links a:hover { color: var(--accent); }
+    .footer-copy { font-size: 0.62rem; color: #334155; }
+
+ 
+
+    /* ═══════════════════════════════════════
+       MODAL (bottom sheet)
+    ═══════════════════════════════════════ */
+    .modal {
+        display: none; position: fixed; inset: 0; z-index: 500;
+        background: rgba(0,0,0,0.7); backdrop-filter: blur(8px);
+        align-items: flex-end; justify-content: center;
+    }
+    .modal.open { display: flex; animation: fadeModal 0.2s ease; }
+    @keyframes fadeModal { from{opacity:0} to{opacity:1} }
+
+    .modal-box {
+        background: var(--surface);
+        width: 100%; max-width: 390px;
+        border-radius: 24px 24px 0 0;
+        border: 1px solid var(--border); border-bottom: none;
+        overflow: hidden;
+        box-shadow: 0 -20px 60px rgba(0,0,0,0.4);
+        animation: slideUpSheet 0.3s ease;
+    }
+    @keyframes slideUpSheet { from{transform:translateY(100%)} to{transform:translateY(0)} }
+
+    .modal-handle { display: flex; justify-content: center; padding: 12px 0 4px; }
+    .modal-handle-bar { width: 40px; height: 4px; background: var(--border); border-radius: 4px; }
+    .modal-header { padding: 4px 20px 0; display: flex; align-items: center; justify-content: space-between; }
+    .modal-header h3 { font-family: 'Syne', sans-serif; font-weight: 700; font-size: 1rem; }
+    .close-btn {
+        width: 30px; height: 30px; border-radius: 50%;
+        background: var(--surface2); border: 1px solid var(--border);
+        color: var(--muted2);
+        display: flex; align-items: center; justify-content: center;
+        cursor: pointer; font-size: 1rem; transition: all 0.2s;
+    }
+    .close-btn:hover { background: rgba(255,255,255,0.1); color: var(--text); }
+    .modal-body { padding: 16px 20px; }
+    .terms-item { display: flex; gap: 10px; padding: 11px 0; border-bottom: 1px solid var(--border); }
+    .terms-item:last-child { border-bottom: none; }
+    .terms-num {
+        width: 22px; height: 22px; border-radius: 50%; flex-shrink: 0;
+        background: rgba(56,189,248,0.12); border: 1px solid rgba(56,189,248,0.2);
+        display: flex; align-items: center; justify-content: center;
+        font-size: 0.65rem; font-weight: 700; color: var(--accent);
+    }
+    .terms-text { font-size: 0.78rem; color: var(--muted2); line-height: 1.5; padding-top: 2px; }
+    .modal-footer { padding: 4px 20px 20px; }
+    .agree-btn {
+        width: 100%; padding: 13px;
+        background: linear-gradient(135deg, var(--accent), var(--accent2));
+        border: none; border-radius: var(--radius-sm);
+        font-weight: 700; font-family: 'Syne', sans-serif;
+        font-size: 0.875rem; color: white; cursor: pointer; transition: all 0.25s;
+    }
+    .agree-btn:hover { opacity: 0.9; }
+
+    /* ═══════════════════════════════════════
+       TOAST
+    ═══════════════════════════════════════ */
+    .toast {
+        position: fixed; bottom: 80px; left: 50%;
+        transform: translateX(-50%) translateY(60px);
+        background: var(--surface2);
+        border: 1px solid var(--border);
+        border-radius: 10px; padding: 10px 16px;
+        font-size: 0.78rem; color: var(--text);
+        z-index: 999;
+        display: flex; align-items: center; gap: 6px;
+        transition: transform 0.3s ease;
+        box-shadow: 0 6px 24px rgba(0,0,0,0.4);
+        white-space: nowrap; max-width: 330px;
+    }
+    .toast.show { transform: translateX(-50%) translateY(0); }
+    .toast.error   { border-color: rgba(239,68,68,0.35); }
+    .toast.success { border-color: rgba(34,211,161,0.35); }
+
+    /* ═══════════════════════════════════════
+       RESPONSIVE — real phones fill viewport
+    ═══════════════════════════════════════ */
+    @media (max-width: 430px) {
+        body { align-items: flex-start; background: var(--bg); }
+        body::before { display: none; }
+        .phone-shell {
+            width: 100vw;
+            height: 100vh;
+            border-radius: 0;
+            border: none;
+            box-shadow: none;
         }
+        .phone-shell::before,
+        .phone-shell::after { display: none; }
+        .toast { bottom: 24px; }
+    }
+</style>
+```
 
-        /* DROPDOWN */
-        .dropdown { position: relative; }
-        .dropbtn {
-            background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1);
-            padding: 8px 14px; border-radius: 10px; color: white; cursor: pointer;
-        }
-        .dropdown-content {
-            position: absolute; right: 0; top: 115%; background: #1e293b;
-            border-radius: 10px; display: none; min-width: 180px;
-            border: 1px solid rgba(255,255,255,0.1); z-index: 100;
-        }
-        .dropdown-content a { display: block; padding: 12px; color: white; text-decoration: none; }
-        .dropdown-content a:hover { background: rgba(255,255,255,0.1); }
-        .show { display: block; }
-
-        /* CARD */
-        .hero { text-align: center; padding: 40px 20px; }
-        .hero h1 { font-size: 2rem; margin-bottom: 8px; }
-        .hero p { color: #94a3b8; }
-
-        .card {
-            background: rgba(255,255,255,0.03); backdrop-filter: blur(12px);
-            padding: 24px; margin: 20px auto; border-radius: 20px;
-            max-width: 400px; border: 1px solid blue;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
-        }
-
-        select, input {
-            width: 100%; padding: 14px; margin-top: 15px; border-radius: 10px;
-            border: 1px solid blue; background: rgba(0,0,0,0.2);
-            color: white; outline: none; font-size: 1rem;
-        }
-
-        .main-btn {
-            width: 100%; margin-top: 20px; padding: 14px;
-            background: linear-gradient(90deg, #22c55e, #16a34a);
-            border: none; border-radius: 10px; font-weight: 700;
-            color: white; cursor: pointer; transition: 0.3s;
-        }
-        .main-btn:disabled { opacity: 0.6; cursor: not-allowed; }
-
-        .actions { display: flex; justify-content: space-between; max-width: 400px; margin: 20px auto; gap: 10px; }
-        .btn-sm { flex: 1; text-align: center; padding: 10px; border-radius: 8px; text-decoration: none; font-size: 14px; border: 1px solid blue; font-weight: 600; cursor: pointer; }
-        .youtube { background: #ef4444; color: white; }
-        .waec { background: #eab308; color: #1e3a8a; }
-
-        footer { text-align: center; font-size: 12px; color: #64748b; margin-top: 40px; padding-bottom: 20px; }
-
-        /* Modal Background */
-        .modal {
-            display: none; position: fixed; z-index: 1000;
-            left: 0; top: 0; width: 100%; height: 100%;
-            background-color: rgba(0,0,0,0.8); backdrop-filter: blur(5px);
-        }
-
-        .modal-content {
-            background-color: #1e293b; margin: 15% auto; padding: 25px;
-            border: 1px solid rgba(255,255,255,0.1); width: 85%;
-            max-width: 500px; border-radius: 15px; position: relative;
-            background-image: url('https://i.postimg.cc/nzgZw571/IMG-0622.png');
-        }
-
-        .close { position: absolute; right: 20px; top: 15px; color: #94a3b8; font-size: 28px; cursor: pointer; }
-        .policy-text { margin: 20px 0; font-size: 14px; line-height: 1.6; color: #cbd5e1; }
-    </style>
 </head>
-
 <body>
 
-<header class="header">
-    <div class="logo">
-        <img src="https://i.postimg.cc/XYjJ5Rgn/BA5B2E92-54B3-43B4-96AE-DE878C2690D2.png" alt="Logo">
-        <span>NextStep Official Domain</span>
+<!-- ══════════════════════════════════════════════
+     PHONE SHELL
+     Layout: [① header pinned] [② screen scrolls] [③ home bar pinned]
+═══════════════════════════════════════════════ -->
+
+<div class="phone-shell">
+
+
+<!-- ① HEADER — flex-shrink:0, never moves -->
+<header class="app-header">
+    <div class="logo-group">
+        <img src="https://i.postimg.cc/XYjJ5Rgn/BA5B2E92-54B3-43B4-96AE-DE878C2690D2.png" alt="NextStep" class="logo-img">
+        <div class="logo-text">
+            <strong>NextStep Data</strong>
+            <span>Official Platform</span>
+        </div>
     </div>
-    <div class="dropdown">
-        <button id="menuBtn" class="dropbtn">Help ☰</button>
-        <div id="menu" class="dropdown-content">
-            <a href="https://wa.me/233540753328" target="_blank">Contact Support</a>
-            <a href="#" id="termsLink">Terms & Conditions</a>
+    <div class="header-right">
+        <div class="status-pill">
+            <div class="status-dot"></div>
+            Live
+        </div>
+        <div class="dropdown">
+            <div class="menu-btn" id="menuBtn">
+                <span></span><span></span><span></span>
+            </div>
+            <div id="menu" class="dropdown-content">
+                <a href="https://wa.me/233540753328" target="_blank"><span>💬</span> Contact Support</a>
+                <a href="#" id="termsLink"><span>📋</span> Terms & Conditions</a>
+            </div>
         </div>
     </div>
 </header>
 
-<section class="hero">
-    <h1>Buy Data Instantly ⚡</h1>
-    <p>Fast • Secure • Reliable</p>
-</section>
+<!-- ② SCREEN — only this div scrolls -->
+<div class="screen">
+    <div class="screen-bg">
+        <div class="bg-grid"></div>
+        <div class="bg-orb1"></div>
+        <div class="bg-orb2"></div>
+    </div>
 
-<div class="card">
-    <select id="network">
-        <option value="">Select Network</option>
-        <option value="MTN">MTN</option>
-        <option value="Vodafone">Vodafone</option>
-        <option value="AirtelTigo">AirtelTigo</option>
-    </select>
+    <div class="screen-content">
 
-    <select id="bundle">
-        <option value="">Select Bundle</option>
-    </select>
+        <!-- HERO -->
+        <section class="hero">
+            <div class="hero-badge">⚡ Instant Delivery</div>
+            <h1>Buy Data<br><span class="highlight">Instantly & Securely</span></h1>
+            <p>Top up your mobile data in seconds. Fast, secure, and reliable.</p>
+            <div class="trust-bar">
+                <div class="trust-item">🔒 Secured</div>
+                <div class="trust-item">⚡ Instant</div>
+                <div class="trust-item">🇬🇭 Ghana</div>
+            </div>
+        </section>
 
-    <input type="tel" id="phone" placeholder="Phone Number (e.g. 054...)" maxlength="10">
+        <!-- PURCHASE CARD -->
+        <div class="card">
+            <div class="card-title"><span>📡</span> Purchase Data Bundle</div>
 
-    <button id="buyBtn" class="main-btn" onclick="buyData()">Buy Now</button>
+            <div class="field-group">
+                <div class="field-label">🌐 Select Network</div>
+
+<div class="network-grid">
+    <div class="network-card" data-network="MTN" onclick="selectNetwork('MTN', this)">
+        <div class="net-emoji">📶</div>
+        <div class="net-name">MTN Ghana</div>
+    </div>
+    <div class="network-card" data-network="Vodafone" onclick="selectNetwork('Vodafone', this)">
+        <div class="net-emoji">📡</div>
+        <div class="net-name">Telecel</div> </div>
+    <div class="network-card" data-network="AirtelTigo" onclick="selectNetwork('AirtelTigo', this)">
+        <div class="net-emoji">📱</div>
+        <div class="net-name">AT (AirtelTigo)</div>
+    </div>
 </div>
+
+            </div>
+
+            <div class="field-group">
+                <div class="field-label">📦 Data Bundle</div>
+                <select id="bundle" onchange="updatePrice()">
+                    <option value="" disabled selected>Choose a bundle...</option>
+                </select>
+            </div>
+
+            <div class="field-group">
+                <div class="field-label">📱 Recipient Number</div>
+                <div class="phone-input-wrap">
+                    <div class="phone-prefix">
+                        <span class="flag">🇬🇭</span>
+                        <span>+233</span>
+                    </div>
+                    <input type="tel" id="phone" placeholder="054 000 0000" maxlength="10">
+                </div>
+            </div>
+
+            <div class="price-display" id="priceDisplay">
+                <span class="price-label">Total to Pay</span>
+                <span class="price-amount" id="priceAmount">GH₵ 0.00</span>
+            </div>
+
+            <button id="buyBtn" class="main-btn" onclick="buyData()">
+                <div class="spinner" id="spinner"></div>
+                <span id="btnText">🛒 Buy Now</span>
+            </button>
+        </div>
+
+        <!-- ACTION CARDS -->
+        <div class="actions">
+            <a href="https://youtube.com/@loldramaempire?sub_confirmation=1" target="_blank" class="action-card">
+                <div class="action-icon yt">▶️</div>
+                <div class="action-info">
+                    <strong>YouTube</strong>
+                    <span>Watch & Subscribe</span>
+                </div>
+            </a>
+            <div class="action-card" onclick="showToast('Growth panel coming soon!', 'success')">
+                <div class="action-icon growth">⤴️</div>
+                <div class="action-info">
+                    <strong>Growth panel</strong>
+                    <span>coming soon</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- FOOTER -->
+        <footer>
+            <div class="footer-links">
+                <a href="https://wa.me/233540753328" target="_blank">Support</a>
+                <a href="#" id="footerTermsLink">Terms</a>
+                <a href="#">Privacy</a>
+            </div>
+            <div class="footer-copy">© 2026 NextStep Data. All rights reserved.</div>
+        </footer>
+
+    </div><!-- /screen-content -->
+</div><!-- /screen -->
+
+
+</div><!-- /phone-shell -->
+
+<!-- TERMS MODAL -->
 
 <div id="termsModal" class="modal">
-  <div class="modal-content">
-    <span class="close" id="closeModalBtn">&times;</span>
-    <h2>Terms & Conditions</h2>
-    <div class="policy-text">
-      <p>1. Data delivery is usually instant but can take up to 30 mins.</p>
-      <p>2. Ensure the phone number entered is correct. No refunds for wrong numbers.</p>
-      <p>3. By using NextStep Data, you agree to our privacy policy.</p>
+    <div class="modal-box">
+        <div class="modal-handle"><div class="modal-handle-bar"></div></div>
+        <div class="modal-header">
+            <h3>Terms & Conditions</h3>
+            <button class="close-btn" id="closeModalBtn">✕</button>
+        </div>
+        <div class="modal-body">
+            <div class="terms-item">
+                <div class="terms-num">1</div>
+                <div class="terms-text">Data delivery is typically instant but may take up to 30 minutes depending on network load.</div>
+            </div>
+            <div class="terms-item">
+                <div class="terms-num">2</div>
+                <div class="terms-text">Ensure the phone number entered is correct before payment. No refunds for incorrect numbers.</div>
+            </div>
+            <div class="terms-item">
+                <div class="terms-num">3</div>
+                <div class="terms-text">All transactions are secured via Paystack. We do not store your payment details.</div>
+            </div>
+            <div class="terms-item">
+                <div class="terms-num">4</div>
+                <div class="terms-text">By using NextStep Data, you agree to our privacy policy and service terms.</div>
+            </div>
+        </div>
+        <div class="modal-footer">
+            <button class="agree-btn" id="confirmTermsBtn">I Understand & Agree</button>
+        </div>
     </div>
-    <button id="confirmTermsBtn" class="main-btn">I Agree</button>
-  </div>
 </div>
 
-<div class="actions">
-    <a href="https://youtube.com/@loldramaempire?sub_confirmation=1" target="_blank" class="btn-sm youtube">YouTube Channel</a>
-    <button class="btn-sm waec">WAEC Checker Cards</button>
-</div>
+<!-- TOAST -->
 
-<footer>© 2026 NextStep Data</footer>
+<div class="toast" id="toast"></div>
 
 <script>
-
 const _supabase = supabase.createClient(
-    "https://zhinkuoqxsmotnbsjdue.supabase.co", 
+    "https://zhinkuoqxsmotnbsjdue.supabase.co",
     "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InpoaW5rdW9xeHNtb3RuYnNqZHVlIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzIzOTc1MzIsImV4cCI6MjA4Nzk3MzUzMn0.Kw5BDJDH9WOAiE3a-P6ylQiseErYG-mHCFi5fgamnUY"
 );
 
-let allBundles = [];
-const buyBtn = document.getElementById("buyBtn");
+let allBundles    = [];
+let selectedNetwork = null;
 
 document.addEventListener("DOMContentLoaded", () => {
-    if (buyBtn) buyBtn.disabled = true;
-    initUI();
     loadBundles();
+
+    const menuBtn = document.getElementById("menuBtn");
+    const menu    = document.getElementById("menu");
+    menuBtn.addEventListener("click", e => { e.stopPropagation(); menu.classList.toggle("show"); });
+    window.addEventListener("click", () => menu.classList.remove("show"));
+
+    const openModal  = () => document.getElementById("termsModal").classList.add("open");
+    const closeModal = () => document.getElementById("termsModal").classList.remove("open");
+
+    document.getElementById("termsLink").addEventListener("click", e => {
+        e.preventDefault(); e.stopPropagation();
+        menu.classList.remove("show"); openModal();
+    });
+    document.getElementById("footerTermsLink").addEventListener("click", e => { e.preventDefault(); openModal(); });
+    document.getElementById("closeModalBtn").addEventListener("click", closeModal);
+    document.getElementById("confirmTermsBtn").addEventListener("click", closeModal);
+    document.getElementById("termsModal").addEventListener("click", e => { if (e.target === e.currentTarget) closeModal(); });
 });
 
-function initUI() {
-    const networkSelect = document.getElementById('network');
-    const menuBtn = document.getElementById("menuBtn");
-    const menu = document.getElementById("menu");
-
-    if (networkSelect) {
-        networkSelect.addEventListener('change', (e) => {
-            const selected = e.target.value;
-            const filtered = selected
-                ? allBundles.filter(b => b.network.toLowerCase() === selected.toLowerCase())
-                : allBundles;
-            populateBundles(filtered);
-        });
-    }
-
-    if (menuBtn && menu) {
-        menuBtn.addEventListener("click", (e) => {
-            e.stopPropagation();
-            menu.classList.toggle("show");
-        });
-        window.addEventListener("click", () => menu.classList.remove("show"));
-    }
-
-    const modal = document.getElementById("termsModal");
-    const termsLink = document.getElementById("termsLink");
-    const closeBtn = document.getElementById("closeModalBtn");
-    const confirmBtn = document.getElementById("confirmTermsBtn");
-
-    if (termsLink) {
-        termsLink.onclick = (e) => {
-            e.preventDefault();
-            modal.style.display = "block";
-        };
-    }
-    if (closeBtn) closeBtn.onclick = () => modal.style.display = "none";
-    if (confirmBtn) confirmBtn.onclick = () => modal.style.display = "none";
+function selectNetwork(network, el) {
+    selectedNetwork = network;
+    document.querySelectorAll('.network-card').forEach(c => c.classList.remove('selected'));
+    el.classList.add('selected');
+    populateBundles(allBundles.filter(b => b.network.toLowerCase() === network.toLowerCase()));
+    document.getElementById('priceDisplay').classList.remove('visible');
 }
 
 async function loadBundles() {
     try {
-        console.log("Fetching bundles...");
         const { data, error } = await _supabase.from('bundles').select('*');
-
         if (error) throw error;
-
-        allBundles = data || [];
-        console.log("Bundles loaded:", allBundles);
-        
-        populateBundles(allBundles);
-
-        if (buyBtn) buyBtn.disabled = false;
-
+        allBundles = data;
+        populateBundles(data);
     } catch (err) {
-        console.error("❌ Bundle Load Error:", err.message);
-        alert("Failed to load bundles. Please refresh.");
+        console.error("Fetch Error:", err.message);
+        showToast('Failed to load bundles. Please refresh.', 'error');
     }
 }
 
 function populateBundles(data) {
-    const bundleSelect = document.getElementById('bundle');
-    if (!bundleSelect) return;
-
-    bundleSelect.innerHTML = `<option value="" disabled selected>Select Bundle</option>`;
-
+    const sel = document.getElementById('bundle');
+    sel.innerHTML = '<option value="" disabled selected>Choose a bundle...</option>';
     data.forEach(item => {
-        const option = document.createElement('option');
-        option.value = item.id;
-        option.textContent = `${item.network} ${item.size} - GH₵${item.price}`;
-        bundleSelect.appendChild(option);
+        const opt = document.createElement('option');
+        opt.value = item.id;
+        opt.textContent = `${item.network} ${item.size} — GH₵${item.price}`;
+        sel.appendChild(opt);
     });
 }
 
-async function buyData() {
-    const phone = document.getElementById('phone').value.trim();
+function updatePrice() {
     const bundleId = document.getElementById('bundle').value;
-
-    if (!phone || phone.length < 10) {
-        alert("Enter a valid phone number.");
-        return;
+    const bundle   = allBundles.find(b => String(b.id) === String(bundleId));
+    if (bundle) {
+        document.getElementById('priceAmount').textContent = `GH₵ ${parseFloat(bundle.price).toFixed(2)}`;
+        document.getElementById('priceDisplay').classList.add('visible');
     }
+}
 
-    if (!bundleId) {
-        alert("Please select a bundle.");
-        return;
-    }
+async function buyData() {
+    const phone    = document.getElementById('phone').value.trim();
+    const bundleId = document.getElementById('bundle').value;
+    const buyBtn   = document.getElementById('buyBtn');
+    const spinner  = document.getElementById('spinner');
+    const btnText  = document.getElementById('btnText');
+
+    if (!phone || phone.length < 10) { showToast('Enter a valid 10-digit phone number', 'error'); return; }
+    if (!bundleId)                   { showToast('Please select a data bundle', 'error'); return; }
 
     const bundle = allBundles.find(b => String(b.id) === String(bundleId));
-    if (!bundle) return;
-
     buyBtn.disabled = true;
-    buyBtn.innerText = "Processing...";
+    spinner.style.display = 'block';
+    btnText.textContent = 'Opening Payment...';
 
     const handler = PaystackPop.setup({
-        key: 'pk_live_68410a36c97591a8e61aa8fc998b9e39cf51b92f',
-        email: `${phone}@nextstepdata.com`,
-        amount: Math.round(bundle.price * 100),
+        key:      'pk_live_68410a36c97591a8e61aa8fc998b9e39cf51b92f',
+        email:    `${phone}@nextstepdata.com`,
+        amount:   Math.round(bundle.price * 100),
         currency: "GHS",
-        ref: 'DATA-' + Date.now(),
-        metadata: {
-            phone: phone,
-            bundle_size: bundle.size,
-            bundle_id: bundle.id,
-           network: bundle.network
-        },
-        callback: function(response) {
-            window.location.href = `success.html?ref=${response.reference}`;
-        },
-        onClose: function() {
+        ref:      'NS-' + Math.floor((Math.random() * 1000000000) + 1),
+        metadata: { phone: phone, network: bundle.network, bundle_size: bundle.size, amount: bundle.price },
+        callback: response => { window.location.href = `success.html?ref=${response.reference}`; },
+        onClose:  () => {
             buyBtn.disabled = false;
-            buyBtn.innerText = "Buy Now";
+            spinner.style.display = 'none';
+            btnText.textContent = '🛒 Buy Now';
         }
     });
     handler.openIframe();
 }
 
-
+function showToast(msg, type = '') {
+    const toast = document.getElementById('toast');
+    const icons = { error: '⚠️', success: '✅' };
+    toast.innerHTML = `<span>${icons[type] || 'ℹ️'}</span> ${msg}`;
+    toast.className = `toast ${type} show`;
+    setTimeout(() => toast.classList.remove('show'), 3500);
+}
 </script>
 
 </body>
