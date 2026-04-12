@@ -212,19 +212,28 @@
         50%      { opacity:.4; transform:scale(.7); }
     }
 
-    .menu-btn {
-        width: 34px; height: 34px; border-radius: 8px;
-        background: var(--surface2); border: 1px solid var(--border);
-        display: flex; flex-direction: column;
-        align-items: center; justify-content: center;
-        gap: 3.5px; cursor: pointer;
-      background-color:  #20b2aa;
-      color: black;
-    }
-    .menu-btn span {
-        width: 14px; height: 1.5px;
-        background: var(--muted2); border-radius: 2px; display: block;
-    }
+  .menu-btn {
+    width: 34px; 
+    height: 34px; 
+    border-radius: 8px;
+    border: 1px solid rgba(255,255,255,0.2);
+    display: flex; 
+    flex-direction: column;
+    align-items: center; 
+    justify-content: center;
+    gap: 4px; /* Space between the 3 lines */
+    cursor: pointer;
+    background-color: #20b2aa; /* Your sea blue */
+}
+
+.menu-btn span {
+    width: 18px; /* Slightly wider for better look */
+    height: 2px;  /* Slightly thicker for visibility */
+    background: #FFFFFF; /* Force white color for the lines */
+    border-radius: 10px;
+    display: block;
+}
+
 
     .dropdown { position: relative; }
     .dropdown-content {
