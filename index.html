@@ -125,7 +125,7 @@
         position: relative;
         z-index: 1;
         width:  100%;
-        height: 100vh;
+        min-height: 100dvh;
         background: var(--shell-bg);
         border-radius: 0;
         border: 2px solid var(--shell-border);
@@ -181,17 +181,20 @@
         border: 1.5px solid var(--border-accent);
         box-shadow: 0 0 12px rgba(56,189,248,0.2);
     }
-  .logo-text strong {
+ .logo-text strong {
     display: block;
     font-family: 'Syne', sans-serif;
     font-weight: 800; 
     font-size: 0.85rem;
+    /* Use a standard color as a base, then apply the gradient */
+    color: var(--accent); 
     background: linear-gradient(90deg, var(--accent), var(--green));
     -webkit-background-clip: text;
-    background-clip: text; /* Add this line for better compatibility */
+    background-clip: text;
+    /* Only make it transparent if the clip is supported */
     -webkit-text-fill-color: transparent;
-    color: var(--accent); /* Add a fallback color */
 }
+
 
     .logo-text span { font-size: 0.62rem; color: var(--muted); }
 
@@ -216,7 +219,7 @@
         50%      { opacity:.4; transform:scale(.7); }
     }
 
-  .menu-btn {
+.menu-btn {
     width: 34px; 
     height: 34px; 
     border-radius: 8px;
@@ -225,17 +228,38 @@
     flex-direction: column;
     align-items: center; 
     justify-content: center;
-    gap: 4px; /* Space between the 3 lines */
+    gap: 4px;
     cursor: pointer;
-    background-color: #20b2aa; /* Your sea blue */
+    background-color: #20b2aa; 
+    transition: all 0.3s ease; /* Adds a smooth color flip */
 }
 
 .menu-btn span {
-    width: 18px; /* Slightly wider for better look */
-    height: 2px;  /* Slightly thicker for visibility */
-    background: #FFFFFF; /* Force white color for the lines */
+    width: 18px; 
+    height: 2px;
+    /* Use a color that is white by default but can change */
+    background-color: #FFFFFF; 
     border-radius: 10px;
     display: block;
+}
+
+@media (prefers-color-scheme: light) {
+    .menu-btn {
+        /* Makes the button match your light theme accent */
+        background-color: var(--accent);
+        border: 1px solid rgba(0,0,0,0.1);
+    }
+    
+    /* Ensure the lines stay visible if the accent is too light */
+    .menu-btn span {
+        background-color: #FFFFFF; 
+        /* Or change to var(--bg) if you want dark lines on light button */
+    }
+}
+
+.menu-btn:active {
+    transform: scale(0.92);
+    opacity: 0.8;
 }
 
 
@@ -346,12 +370,13 @@
         line-height: 1.1; letter-spacing: -0.02em;
         margin-bottom: 10px;
     }
-   .hero h1 .highlight {
+
+.hero h1 .highlight {
+    color: var(--accent); /* Fallback for when gradient/clip fails */
     background: linear-gradient(135deg, var(--accent), var(--green));
     -webkit-background-clip: text;
     background-clip: text;
     -webkit-text-fill-color: transparent;
-    color: var(--accent); /* Fallback color so it's never invisible */
 }
 
     .hero p {
@@ -514,7 +539,7 @@
 
     .main-btn {
         width: 100%; padding: 14px;
-        background: linear-gradient(135deg, var(--green), var(--green2));
+       background: linear-gradient(135deg, #20b2aa, #10B981);
         border: none; border-radius: var(--radius-sm);
         font-weight: 700; font-family: 'Syne', sans-serif;
         font-size: 0.9rem; letter-spacing: 0.02em;
@@ -522,7 +547,7 @@
         transition: all 0.25s;
         position: relative; overflow: hidden;
         display: flex; align-items: center; justify-content: center; gap: 7px;
-   background-color:  #20b2aa;
+  
     }
     .main-btn::before {
         content: '';
