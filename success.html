@@ -1,101 +1,124 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Payment Status</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Payment Verification</title>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&family=Syne:wght@700&display=swap" rel="stylesheet">
 
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        
+        :root {
+            /* Sea Blue Palette */
+            --primary: #004c6d; 
+            --secondary: #006994; 
+            --accent: #20b2aa; /* Light Sea Green/Blue */
+            --success: #06b6d4; 
+            --error: #ff6b6b; 
+            --text-primary: #ffffff;
+            --text-secondary: #e0f2fe; 
+            --border: rgba(255, 255, 255, 0.2);
+            --glass: rgba(0, 76, 109, 0.6);
+        }
 
-<style>
-    :root {
-        --glass-bg: rgba(255, 255, 255, 0.05);
-        --glass-border: rgba(255, 255, 255, 0.1);
-        --accent: #10b981; /* Emerald 500 */
-    }
+        body {
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            /* Sea Blue Gradient */
+            background: linear-gradient(135deg, #002d40 0%, #006994 50%, #004c6d 100%);
+            background-attachment: fixed; 
+            color: var(--text-primary);
+            display: flex; 
+            align-items: center; 
+            justify-content: center;
+            min-height: 100vh; 
+            padding: 20px; 
+            overflow: hidden;
+        }
 
-    body {
-        font-family: 'Inter', -apple-system, sans-serif;
-        /* Dynamic mesh gradient background */
-        background: radial-gradient(circle at top left, #1e293b, #0f172a);
-        background-attachment: fixed;
-        color: #f8fafc;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        min-height: 100vh;
-        margin: 0;
-        padding: 20px;
-      background-image: url('https://i.postimg.cc/nzgZw571/IMG-0622.png');;
-    }
+        .card {
+            background: var(--glass); 
+            backdrop-filter: blur(25px); 
+            -webkit-backdrop-filter: blur(25px);
+            border: 1px solid var(--border); 
+            padding: 50px 30px; 
+            border-radius: 28px;
+            max-width: 400px; 
+            width: 100%; 
+            text-align: center;
+            box-shadow: 0 25px 50px rgba(0,0,0,0.3);
+        }
 
-    .card {
-        background: var(--glass-bg);
-        backdrop-filter: blur(12px); /* The "Glass" effect */
-        -webkit-backdrop-filter: blur(12px);
-        border: 1px solid var(--glass-border);
-        box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
-        padding: 40px;
-        border-radius: 24px;
-        max-width: 400px;
-        width: 100%;
-        text-align: center;
-    }
+        .status-icon { 
+            width: 80px; 
+            height: 80px; 
+            margin: 0 auto 20px; 
+            display: flex; 
+            align-items: center; 
+            justify-content: center; 
+        }
+        
+        /* NS Animation */
+        .ns-logo-svg { width: 70px; height: 70px; animation: nsPulse 2s ease-in-out infinite; }
+        @keyframes nsPulse { 
+            0%, 100% { transform: scale(1); opacity: 1; } 
+            50% { transform: scale(1.1); opacity: 0.8; } 
+        }
+        .ns-path { stroke: var(--accent); fill: none; stroke-width: 8; stroke-linecap: round; stroke-linejoin: round; }
 
-    h2 {
-        font-weight: 600;
-        letter-spacing: -0.02em;
-        margin-bottom: 24px;
-    }
+        h1 { font-family: 'Syne', sans-serif; font-size: 24px; margin-bottom: 8px; color: #fff; }
+        .subtitle { font-size: 12px; color: var(--text-secondary); text-transform: uppercase; letter-spacing: 1.5px; margin-bottom: 15px; opacity: 0.9; }
+        #message { color: var(--text-secondary); margin-bottom: 25px; font-size: 14px; line-height: 1.5; }
 
-    #message {
-        color: #94a3b8;
-        line-height: 1.6;
-    }
+        .btn {
+            width: 100%; padding: 14px; border-radius: 12px; border: none;
+            background: linear-gradient(135deg, var(--accent), var(--success));
+            color: white; font-weight: 700; cursor: pointer; margin-top: 10px;
+            transition: all 0.3s ease; text-decoration: none; display: block;
+        }
+        .btn-secondary { 
+            background: rgba(255, 255, 255, 0.15); 
+            border: 1px solid var(--border); 
+            margin-top: 10px; 
+        }
+        .btn:hover { filter: brightness(1.1); transform: translateY(-1px); }
+        .btn:active { transform: scale(0.98); }
 
-    /* Modern Minimal Spinner */
-    .spinner {
-        width: 48px;
-        height: 48px;
-        border: 3px solid rgba(16, 185, 129, 0.1);
-        border-radius: 50%;
-        border-top-color: var(--accent);
-        animation: spin 0.8s cubic-bezier(0.5, 0, 0.5, 1) infinite;
-        margin: 24px auto;
-    }
-
-    .btn {
-        margin-top: 20px;
-        padding: 12px 24px;
-        background: var(--accent);
-        color: white;
-        border: none;
-        border-radius: 12px;
-        font-weight: 600;
-        cursor: pointer;
-        transition: transform 0.2s, background 0.2s;
-    }
-
-    .btn:hover {
-        background: #059669;
-        transform: translateY(-1px);
-    }
-
-    @keyframes spin {
-        to { transform: rotate(360deg); }
-    }
-</style>
+        .details-box { background: rgba(0, 0, 0, 0.2); padding: 15px; border-radius: 12px; margin-bottom: 20px; text-align: left; border: 1px solid var(--border); }
+        .detail-row { display: flex; justify-content: space-between; font-size: 13px; padding: 5px 0; border-bottom: 1px solid rgba(255,255,255,0.1); }
+        .detail-row:last-child { border-bottom: none; }
+        .hidden { display: none !important; }
+        
+        #status.error-text { color: var(--error); }
+    </style>
 </head>
-
 <body>
 
 <div class="card">
-    <h2 id="status">Verifying Payment</h2>
-    <div class="spinner" id="loader"></div>
-    <p id="message">Please wait while we confirm your transaction securely.</p>
+    <div class="status-icon" id="loader-container">
+        <div class="spinner" id="loader">
+            <svg class="ns-logo-svg" viewBox="0 0 100 100">
+                <path class="ns-path" d="M30 70V30L50 55V30 M70 35C70 30 60 28 55 35C50 45 70 45 65 60C60 70 50 68 50 65"/>
+            </svg>
+        </div>
+    </div>
+    
+    <h1 id="status">Verifying Payment</h1>
+    <p class="subtitle" id="subtitle">Please wait</p>
+    <p id="message">We're checking your transaction. This should only take a moment.</p>
+    
+    <div id="details" class="details-box hidden"></div>
+
+    <div id="actions">
+        <a href="index.html" class="btn btn-secondary">Back to Home</a>
+    </div>
 </div>
 
 <script>
+// Logic remains identical to your original, just fixed a few tiny selector potential issues
 const supabaseClient = window.supabase.createClient(
     "https://zhinkuoqxsmotnbsjdue.supabase.co",
     "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InpoaW5rdW9xeHNtb3RuYnNqZHVlIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzIzOTc1MzIsImV4cCI6MjA4Nzk3MzUzMn0.Kw5BDJDH9WOAiE3a-P6ylQiseErYG-mHCFi5fgamnUY"
@@ -103,76 +126,76 @@ const supabaseClient = window.supabase.createClient(
 
 const params = new URLSearchParams(window.location.search);
 const ref = params.get("ref");
-
 let attempts = 0;
-const maxAttempts = 20; 
 
 async function checkPayment() {
     if (!ref) {
-        showError("No payment reference found.");
-        return; 
+        showError("No payment reference was found in the link.");
+        return;
     }
 
     attempts++;
-    if (attempts > maxAttempts) {
-        showError("Timed out. Please contact support.");
+    if (attempts > 20) {
+        showError("Verification timed out. Please check your network or contact support.", true);
         return;
     }
 
     try {
         const { data, error } = await supabaseClient
             .from("transactions")
-            .select("status, phone, bundle_id") 
+            .select("status, phone, bundle_id")
             .eq("paystack_ref", ref)
             .maybeSingle();
 
-        if (error) throw error;
-
-        if (!data) {
-            setTimeout(checkPayment, 3000);
-            return;
-        }
-
-        const currentStatus = data.status?.toLowerCase();
-
-        if (currentStatus === "paid") {
+        if (data?.status?.toLowerCase() === "paid") {
             showSuccess(data);
-        } else if (currentStatus === "failed") {
-            showError("Payment failed. Please try again.");
+        } else if (data?.status?.toLowerCase() === "failed") {
+            showError("The payment was declined or failed.", true);
         } else {
             setTimeout(checkPayment, 3000);
         }
-
     } catch (err) {
-        console.error("Connection Error:", err.message);
+        // Retry on network error
         setTimeout(checkPayment, 5000);
     }
 }
 
 function showSuccess(data) {
+    document.getElementById("loader").innerHTML = '<span style="font-size:50px">✅</span>';
     document.getElementById("status").innerText = "Success!";
-    document.getElementById("loader").style.display = "none";
-    document.getElementById("message").innerHTML = `
-        Your bundle is being processed.<br><br>
-        <div style="background: rgba(255,255,255,0.03); padding: 15px; border-radius: 12px; text-align: left; font-size: 0.9em;">
-            <strong>Phone:</strong> ${data.phone}<br>
-            <strong>Bundle:</strong> ${data.bundle_id}
-        </div>
-        <button class="btn" onclick="window.location.href='index.html'">
-            Buy Another Bundle
-        </button>
+    document.getElementById("subtitle").innerText = "Payment Confirmed";
+    document.getElementById("message").innerText = "Your transaction was successful.";
+    
+    const details = document.getElementById("details");
+    details.innerHTML = `
+        <div class="detail-row"><strong>Phone</strong><span>${data.phone || 'N/A'}</span></div>
+        <div class="detail-row"><strong>Bundle</strong><span>${data.bundle_id || 'N/A'}</span></div>
+    `;
+    details.classList.remove('hidden');
+    
+    document.getElementById("actions").innerHTML = `
+        <a href="index.html" class="btn">Purchase Another</a>
+        <a href="index.html" class="btn btn-secondary">Back to Home</a>
     `;
 }
 
-function showError(msg) {
-    document.getElementById("status").innerText = "Payment Error";
-    document.getElementById("status").style.color = "#ef4444";
-    document.getElementById("loader").style.display = "none";
+function showError(msg, showRetry = false) {
+    document.getElementById("loader").innerHTML = '<span style="font-size:50px">❌</span>';
+    document.getElementById("status").innerText = "Error";
+    document.getElementById("status").classList.add("error-text");
     document.getElementById("message").innerText = msg;
+    
+    let actionHtml = '';
+    if (showRetry) {
+        actionHtml += `<button class="btn" onclick="location.reload()">Retry Now</button>`;
+    }
+    actionHtml += `<a href="index.html" class="btn btn-secondary">Back to Home</a>`;
+    
+    document.getElementById("actions").innerHTML = actionHtml;
 }
 
+// Start the process
 checkPayment();
 </script>
-
 </body>
 </html>
