@@ -181,14 +181,18 @@
         border: 1.5px solid var(--border-accent);
         box-shadow: 0 0 12px rgba(56,189,248,0.2);
     }
-    .logo-text strong {
-        display: block;
-        font-family: 'Syne', sans-serif;
-        font-weight: 800; font-size: 0.85rem;
-        background: linear-gradient(90deg, var(--accent), var(--green));
-        -webkit-background-clip: text;
-        -webkit-text-fill-color: transparent;
-    }
+  .logo-text strong {
+    display: block;
+    font-family: 'Syne', sans-serif;
+    font-weight: 800; 
+    font-size: 0.85rem;
+    background: linear-gradient(90deg, var(--accent), var(--green));
+    -webkit-background-clip: text;
+    background-clip: text; /* Add this line for better compatibility */
+    -webkit-text-fill-color: transparent;
+    color: var(--accent); /* Add a fallback color */
+}
+
     .logo-text span { font-size: 0.62rem; color: var(--muted); }
 
     .header-right { display: flex; align-items: center; gap: 8px; }
@@ -342,11 +346,14 @@
         line-height: 1.1; letter-spacing: -0.02em;
         margin-bottom: 10px;
     }
-    .hero h1 .highlight {
-        background: linear-gradient(135deg, var(--accent), var(--green));
-        -webkit-background-clip: text;
-        -webkit-text-fill-color: transparent;
-    }
+   .hero h1 .highlight {
+    background: linear-gradient(135deg, var(--accent), var(--green));
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
+    color: var(--accent); /* Fallback color so it's never invisible */
+}
+
     .hero p {
         color: var(--muted2); font-size: 0.82rem;
         max-width: 260px; margin: 0 auto; line-height: 1.6;
