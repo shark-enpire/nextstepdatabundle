@@ -181,19 +181,27 @@
         border: 1.5px solid var(--border-accent);
         box-shadow: 0 0 12px rgba(56,189,248,0.2);
     }
- .logo-text strong {
+
+.logo-text strong {
     display: block;
     font-family: 'Syne', sans-serif;
     font-weight: 800; 
     font-size: 0.85rem;
-    /* Use a standard color as a base, then apply the gradient */
-    color: var(--accent); 
-    background: linear-gradient(90deg, var(--accent), var(--green));
+    
+    /* 1. Set a solid fallback color first */
+    color: #38BDF8; 
+    
+    /* 2. Apply the gradient */
+    background-image: linear-gradient(90deg, #38BDF8, #22D3A1);
+    
+    /* 3. Clip it */
     -webkit-background-clip: text;
     background-clip: text;
-    /* Only make it transparent if the clip is supported */
+    
+    /* 4. Only then set fill to transparent */
     -webkit-text-fill-color: transparent;
 }
+
 
 
     .logo-text span { font-size: 0.62rem; color: var(--muted); }
@@ -372,11 +380,21 @@
     }
 
 .hero h1 .highlight {
-    color: var(--accent); /* Fallback for when gradient/clip fails */
-    background: linear-gradient(135deg, var(--accent), var(--green));
+    /* 1. Set a solid fallback color first */
+    color: #38BDF8; 
+    
+    /* 2. Apply the gradient */
+    background-image: linear-gradient(135deg, #38BDF8, #22D3A1);
+    
+    /* 3. Clip it */
     -webkit-background-clip: text;
     background-clip: text;
+    
+    /* 4. Only then set fill to transparent */
     -webkit-text-fill-color: transparent;
+    
+    /* Extra: Ensure it's inline-block to handle the clip better */
+    display: inline-block;
 }
 
     .hero p {
