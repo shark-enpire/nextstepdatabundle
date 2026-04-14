@@ -217,15 +217,33 @@
         font-size: 0.62rem; font-weight: 600;
         color: var(--green);
     }
-    .status-dot {
-        width: 5px; height: 5px; border-radius: 50%;
-        background: var(--green);
-        animation: pulse-dot 2s ease-in-out infinite;
+
+.status-dot {
+    width: 6px; 
+    height: 6px; 
+    border-radius: 50%;
+    background-color: var(--green); /* Ensure this is #22D3A1 */
+    flex-shrink: 0; /* Prevents the dot from squishing */
+    display: block;
+    box-shadow: 0 0 8px var(--green);
+    animation: pulse-dot 1.5s infinite;
+}
+
+@keyframes pulse-dot {
+    0% {
+        transform: scale(0.95);
+        box-shadow: 0 0 0 0 rgba(34, 211, 161, 0.7);
     }
-    @keyframes pulse-dot {
-        0%,100% { opacity:1; transform:scale(1); }
-        50%      { opacity:.4; transform:scale(.7); }
+    70% {
+        transform: scale(1);
+        box-shadow: 0 0 0 6px rgba(34, 211, 161, 0);
     }
+    100% {
+        transform: scale(0.95);
+        box-shadow: 0 0 0 0 rgba(34, 211, 161, 0);
+    }
+}
+
 
 .menu-btn {
     width: 34px; 
@@ -1003,14 +1021,25 @@ async function buyData() {
     spinner.style.display = 'block';
     btnText.textContent = 'Opening Payment...';
 
-    const handler = PaystackPop.setup({
+     const handler = PaystackPop.setup({
         key:      'pk_live_68410a36c97591a8e61aa8fc998b9e39cf51b92f',
         email:    `${phone}@nextstepdata.com`,
         amount:   Math.round(bundle.price * 100),
         currency: "GHS",
         ref:      'NS-' + Math.floor((Math.random() * 1000000000) + 1),
-        metadata: { phone: phone, network: bundle.network, bundle_size: bundle.size, amount: bundle.price },
-        callback: response => { window.location.href = `success.html?ref=${response.reference}`; },
+        metadata: {
+            phone: phone,
+            network: bundle.network,
+            bundle_size: bundle.size,
+            custom_fields: [
+                { display_name: "Phone Number", variable_name: "phone", value: phone },
+                { display_name: "Network", variable_name: "network", value: bundle.network },
+                { display_name: "Size", variable_name: "bundle_size", value: bundle.size }
+            ]
+        },
+        callback: response => { 
+            window.location.href = `success.html?ref=${response.reference}`; 
+        },
         onClose:  () => {
             buyBtn.disabled = false;
             spinner.style.display = 'none';
@@ -1018,7 +1047,7 @@ async function buyData() {
         }
     });
     handler.openIframe();
-}
+  }
 
 function showToast(msg, type = '') {
     const toast = document.getElementById('toast');
