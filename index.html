@@ -1034,7 +1034,8 @@ async function buyData() {
             custom_fields: [
                 { display_name: "Phone Number", variable_name: "phone", value: phone },
                 { display_name: "Network", variable_name: "network", value: bundle.network },
-                { display_name: "Size", variable_name: "bundle_size", value: bundle.size }
+                { display_name: "Size", variable_name: "bundle_size", value: bundle.size },
+                { display_name: "Bundle ID", variable_name: "bundle_id", value: bundle.id } // <--- And this one for the Dashboard
             ]
         },
         callback: response => { 
